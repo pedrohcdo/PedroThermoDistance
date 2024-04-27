@@ -2,51 +2,51 @@
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
-## Introdução
-O algoritmo PHC Similarity (Pedro Henrique Chaves Similarity) foi desenvolvido para calcular a similaridade entre duas strings com base em uma função de penalidade definida e um número máximo de tentativas de correspondência. O algoritmo pode operar em diferentes modos, ajustando-se a vários cenários de comparação de texto.
+## Introduction
+The PHC Similarity Algorithm (Pedro Henrique Chaves Similarity) was developed to calculate the similarity between two strings based on a defined penalty function and a maximum number of matching attempts. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
 
-## Descrição
-O PHC Similarity utiliza uma abordagem de programação dinâmica para determinar a similaridade entre duas strings de maneira eficiente. A complexidade de tempo do algoritmo é O(firstText * secondText * maxAttempts), tornando-o adequado para análises em tempo real onde a eficiência é crucial.
+## Description
+The PHC Similarity utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * maxAttempts), making it suitable for real-time analyses where efficiency is crucial.
 
-### Modos de Operação
-- **Delete**: Este modo conta apenas as deleções como erros.
-- **Edit**: Permite deleções e substituições.
-- **Full**: Inclui deleções, inserções e substituições.
+### Operation Modes
+- **Delete**: This mode counts only deletions as errors.
+- **Edit**: Allows deletions and substitutions.
+- **Full**: Includes deletions, insertions, and substitutions.
 
-### Função de Penalidade
-A função de penalidade é aplicada a cada tentativa além da primeira correspondência e é crucial para ajustar a sensibilidade do algoritmo a erros.
+### Penalty Function
+The penalty function is applied to each attempt beyond the first match and is crucial for adjusting the sensitivity of the algorithm to errors.
 
-### Descrição dos Argumentos
-A função `calculatePHCSimilarity` aceita cinco argumentos, cada um desempenhando um papel crucial no cálculo da similaridade entre duas strings. Aqui está uma descrição detalhada de cada argumento:
+### Argument Description
+The function `calculatePHCSimilarity` accepts five arguments, each playing a crucial role in calculating the similarity between two strings. Here is a detailed description of each argument:
 
-- **`firstText: string`**: O primeiro texto a ser comparado. Representa a string base na comparação. Pode ser qualquer sequência de caracteres, como um nome, frase ou qualquer outro tipo de dado textual.
+- **`firstText: string`**: The first text to be compared. It represents the base string in the comparison. It can be any sequence of characters, such as a name, phrase, or any other type of textual data.
 
-- **`secondText: string`**: O segundo texto a ser comparado contra o primeiro. Assim como `firstText`, deve ser uma sequência de caracteres e é tratado como o texto-alvo na operação de comparação.
+- **`secondText: string`**: The second text to be compared against the first. Similar to `firstText`, it must be a sequence of characters and is treated as the target text in the comparison.
 
-- **`maxAttempts: number`**: O número máximo de tentativas de correspondência permitidas. Este parâmetro define o limite para quantas vezes o algoritmo tentará fazer uma correspondência após o primeiro desacordo encontrado. É crucial para controlar o comportamento da função de penalidade e o impacto dos erros na pontuação final de similaridade.
+- **`maxAttempts: number`**: The maximum number of matching attempts allowed. This parameter sets the limit on how many times the algorithm will try to make a match after the first disagreement is found. It is crucial for controlling the behavior of the penalty function and the impact of errors on the final similarity score.
 
-- **`penaltyFunction: (attempt: number) => number`**: Uma função de callback que define a penalidade para cada tentativa além da primeira correspondência. Esta função recebe o número da tentativa atual como argumento e retorna um valor numérico que será usado como penalidade. A forma da função de penalidade pode variar dependendo do caso de uso, e ela influencia significativamente o cálculo da similaridade ao penalizar as correspondências imperfeitas.
+- **`penaltyFunction: (attempt: number) => number`**: A callback function that defines the penalty for each attempt beyond the first match. This function takes the current attempt number as an argument and returns a numerical penalty. The form of the penalty function can vary depending on the use case, and it significantly influences the similarity calculation by penalizing imperfect matches.
 
-- **`mode: 'delete' | 'edit' | 'full'`**: Define o modo de operação da função. O modo 'delete' permite apenas deleções, o modo 'edit' inclui deleções e substituições, e o modo 'full' abrange deleções, inserções e substituições, oferecendo a abordagem mais flexível e abrangente na comparação de strings.
+- **`mode: 'delete' | 'edit' | 'full'`**: Defines the mode of operation of the function. The 'delete' mode allows only deletions, the 'edit' mode includes deletions and substitutions, and the 'full' mode covers deletions, insertions, and substitutions, offering the most flexible and comprehensive approach to string comparison.
 
-## Exemplos de Uso
+## Usage Examples
 
-### Comparação Básica
-Aqui está como você usaria o algoritmo no modo 'delete' para comparar duas strings:
+### Basic Comparison
+Here is how you would use the algorithm in 'delete' mode to compare two strings:
 
 ```typescript
 const similarityScore = calculatePHCSimilarity("hello", "h3llo", 3, attempt => attempt * 2, 'delete');
-console.log(similarityScore); // Saída esperada pode variar
+console.log(similarityScore); // Expected output may vary
 ```
 
-### Modo Full com Detalhes de Cálculo
-Este exemplo detalhado demonstra como o algoritmo calcula a similaridade no modo 'full', considerando múltiplas deleções e uma substituição, com uma função de penalidade que aumenta com o número de tentativas:
+### Full Mode with Calculation Details
+This detailed example demonstrates how the algorithm calculates similarity in 'full' mode, considering multiple deletions and a substitution, with a penalty function that increases with the number of attempts:
 
 ```typescript
-// Comparação entre "hello" e "h3lloooooo" com até 3 tentativas e penalidade dobrada por tentativa:
+// Comparison between "hello" and "h3lloooooo" with up to 3 attempts and double penalty per attempt:
 const fullModeScore = calculatePHCSimilarity("hello", "h3lloooooo", 3, attempt => attempt * 2, 'full');
 
-// Detalhes do cálculo:
+// Calculation details:
 // - 'h' matches directly.
 // - 'e' is substituted by '3', counting as one edit error.
 // - Both 'l's match directly.
@@ -55,18 +55,11 @@ const fullModeScore = calculatePHCSimilarity("hello", "h3lloooooo", 3, attempt =
 // Penalty calculation: 2 (1st 'o' error) + 4 (2nd 'o' error) + 6 + 6 + 6 (subsequent 'o' errors with max penalty)
 // Total penalty: 26
 // Similarity score is calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 26):
-console.log(fullModeScore); // Exemplo de saída: 0.13
+console.log(fullModeScore); // Example output: 0.13
 ```
 
-## Licença
+## License
 
-Este projeto é licenciado sob a Licença MIT. A licença MIT é uma licença permissiva que é curta e simples. Ela permite que o software seja livremente usado, modificado, redistribuído e vendido, tanto em versões originais quanto modificadas. A licença também protege o autor ao limitar a responsabilidade.
-
-A licença completa pode ser encontrada no arquivo `LICENSE` incluído no diretório raiz deste repositório.
-
-### Texto da Licença MIT (Exemplo)
-
-```plaintext
 MIT License
 
 Copyright (c) [ano] [nome completo do detentor dos direitos autorais]
