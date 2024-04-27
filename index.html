@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHC Similarity Test</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .result {
+        margin-top: 20px;
+        font-size: 1.2em;
+        color: #333;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <input type="text" id="text1" placeholder="Enter first text">
+    <input type="text" id="text2" placeholder="Enter second text">
+    <label for="maxAttempts">Max Retry Attempts: <span id="retryValue">3</span></label>
+    <input type="range" id="maxAttempts" min="1" max="10" value="3" oninput="document.getElementById('retryValue').textContent = value">
+    <input type="text" id="penaltyFunction" placeholder="Enter penalty function, e.g., x*2" value="x*2">
+    <button onclick="calculateSimilarity()">Calculate Similarity</button>
+    <div id="result" class="result">Result: </div>
+</div>
+
+<script>
+function calculatePHCensoredSimilarity(firstText, secondText, maxAttempts, penaltyFunction, mode = 'full') {
+    const dp = new Array(firstText.length + 1).fill(null).map(() => 
+        new Array(secondText.length + 1).fill(null).map(() => 
+            new Array(maxAttempts).fill(null).map(() => [0, 0])
+        )
+    );
+
+    const similarity = ([corrects, wrongs]) => {
+        if(corrects + wrongs === 0) return 0;
+        return corrects / (corrects + wrongs);
+    };
+
+    const attempts = maxAttempts - 1;
+
+    // Initialize edges assuming only wrongs possible
+    for (let i = 1; i <= firstText.length; i++) {
+        for (let a = 0; a < maxAttempts; a++) {
+            dp[i][0][a][1] = penaltyFunction(maxAttempts - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
+        }
+    }
+    for (let j = 1; j <= secondText.length; j++) {
+        for (let a = 0; a < maxAttempts; a++) {
+            dp[0][j][a][1] = penaltyFunction(maxAttempts - a) + dp[0][j - 1][Math.max(a - 1, 0)][1];
+        }
+    }
+
+    // Fill DP table
+    for (let i = 0; i < firstText.length; i++) {
+        for (let j = 0; j < secondText.length; j++) {
+            for (let a = 0; a < maxAttempts; a++) {
+                if (firstText.charAt(i) === secondText.charAt(j)) {
+                    dp[i+1][j+1][a][0] = 1 + dp[i][j][attempts][0];
+                    dp[i+1][j+1][a][1] = dp[i][j][attempts][1];
+                } else {
+                    const retry = Math.max(a - 1, 0);
+                    const cuts = [];
+                    if (mode === 'edit' || mode === 'full') cuts.push(dp[i][j][retry]);
+                    if (mode === 'delete' || mode === 'full') cuts.push(dp[i+1][j][retry], dp[i][j+1][retry]);
+                    const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift();
+                    dp[i+1][j+1][a][0] = bestCut[0];
+                    dp[i+1][j+1][a][1] = penaltyFunction(maxAttempts - a) + bestCut[1];
+                }
+            }
+        }
+    }
+
+    return similarity(dp[firstText.length][secondText.length][attempts]);
+}
+
+function calculateSimilarity() {
+    const text1 = document.getElementById('text1').value;
+    const text2 = document.getElementById('text2').value;
+    const maxAttempts = parseInt(document.getElementById('maxAttempts').value, 10);
+    const penaltyFuncStr = document.getElementById('penaltyFunction').value;
+    const penaltyFunction = new Function('x', 'return ' + penaltyFuncStr);
+    
+    const result = calculatePHCensoredSimilarity(text1, text2, maxAttempts, penaltyFunction);
+    document.getElementById('result').textContent = 'Result: ' + result.toFixed(2);
+}
+</script>
+</body>
+</html>
