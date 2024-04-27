@@ -1,4 +1,4 @@
-# PHC Similarity Algorithm
+# PHC (Pedro Henrique Chaves) Similarity Algorithm
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
