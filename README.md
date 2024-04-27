@@ -8,6 +8,14 @@ The PHC Similarity Algorithm (Pedro Henrique Chaves Similarity) was developed to
 ## Description
 The PHC Similarity utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * maxAttempts), making it suitable for real-time analyses where efficiency is crucial.
 
+## Live Demo
+
+Try the PHC Similarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and maximum attempt limits.
+
+[Try PHC Similarity Live](https://pedrohcdo.github.io/PHC-Similarity/)
+
+Use the text fields to input the strings you want to compare, adjust the slider to set the maximum number of matching attempts, and modify the penalty function as needed. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
+
 ### Operation Modes
 - **Delete**: This mode counts only deletions as errors.
 - **Edit**: Allows deletions and substitutions.
