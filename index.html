@@ -11,18 +11,26 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        flex-direction: column;
+        background-color: #f4f4f4; /* Light grey background for the entire page */
+        margin: 0;
     }
     .container {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 20px;
+        background-color: #fff; /* White background for the form */
+        padding: 40px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Adds shadow for better visibility */
+        border-radius: 8px; /* Rounded corners */
     }
     .result {
         margin-top: 20px;
         font-size: 1.2em;
         color: #333;
+    }
+    input[type="text"], input[type="range"], button {
+        width: 100%; /* Full width inputs and button */
     }
 </style>
 </head>
@@ -38,7 +46,7 @@
 </div>
 
 <script>
-function calculatePHCensoredSimilarity(firstText, secondText, maxAttempts, penaltyFunction, mode = 'full') {
+function calculatePHCSimilarity(firstText, secondText, maxAttempts, penaltyFunction, mode = 'full') {
     const dp = new Array(firstText.length + 1).fill(null).map(() => 
         new Array(secondText.length + 1).fill(null).map(() => 
             new Array(maxAttempts).fill(null).map(() => [0, 0])
@@ -94,7 +102,7 @@ function calculateSimilarity() {
     const penaltyFuncStr = document.getElementById('penaltyFunction').value;
     const penaltyFunction = new Function('x', 'return ' + penaltyFuncStr);
     
-    const result = calculatePHCensoredSimilarity(text1, text2, maxAttempts, penaltyFunction);
+    const result = calculatePHCSimilarity(text1, text2, maxAttempts, penaltyFunction);
     document.getElementById('result').textContent = 'Result: ' + result.toFixed(2);
 }
 </script>
