@@ -1,5 +1,7 @@
 # PHC Similarity Algorithm
 
+[![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
+
 ## Introdução
 O algoritmo PHC Similarity (Pedro Henrique Chaves Similarity) foi desenvolvido para calcular a similaridade entre duas strings com base em uma função de penalidade definida e um número máximo de tentativas de correspondência. O algoritmo pode operar em diferentes modos, ajustando-se a vários cenários de comparação de texto.
 
