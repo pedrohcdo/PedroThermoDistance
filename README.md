@@ -3,18 +3,18 @@
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
 ## Introduction
-The PHC Similarity Algorithm (Pedro Henrique Chaves Similarity) was developed to calculate the similarity between two strings based on a defined penalty function and a maximum number of matching attempts. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
+The PHC Similarity Algorithm (Pedro Henrique Chaves Similarity) was developed to calculate the similarity between two strings based on a defined penalty function and a maximum penalty clamp. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
 
 ## Description
-The PHC Similarity utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * maxAttempts), making it suitable for real-time analyses where efficiency is crucial.
+The PHC Similarity utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * penaltyClamp), making it suitable for real-time analyses where efficiency is crucial.
 
 ## Live Demo
 
-Try the PHC Similarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and maximum attempt limits.
+Try the PHC Similarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and penalty clamp limits.
 
 [Try PHC Similarity Live](https://pedrohcdo.github.io/PHC-Similarity/)
 
-Use the text fields to input the strings you want to compare, adjust the slider to set the maximum number of matching attempts, and modify the penalty function as needed. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
+Use the text fields to input the strings you want to compare, adjust the slider to set the maximum penalty clamp, and modify the penalty function as needed. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
 
 ### Operation Modes
 - **Delete**: This mode counts only deletions as errors.
@@ -31,7 +31,7 @@ The function `calculatePHCSimilarity` accepts five arguments, each playing a cru
 
 - **`secondText: string`**: The second text to be compared against the first. Similar to `firstText`, it must be a sequence of characters and is treated as the target text in the comparison.
 
-- **`maxAttempts: number`**: The maximum number of matching attempts allowed. This parameter sets the limit on how many times the algorithm will try to make a match after the first disagreement is found. It is crucial for controlling the behavior of the penalty function and the impact of errors on the final similarity score.
+- **`penaltyClamp: number`**: The maximum clamp value for penalty attempts, which sets a limit on the severity of penalties applied after the first mismatch. This helps control the negative impact of increasing penalties on the similarity score, ensuring that excessive mismatches don't disproportionately affect the outcome.
 
 - **`penaltyFunction: (attempt: number) => number`**: A callback function that defines the penalty for each attempt beyond the first match. This function takes the current attempt number as an argument and returns a numerical penalty. The form of the penalty function can vary depending on the use case, and it significantly influences the similarity calculation by penalizing imperfect matches.
 
@@ -51,7 +51,7 @@ console.log(similarityScore); // Expected output may vary
 This detailed example demonstrates how the algorithm calculates similarity in 'full' mode, considering multiple deletions and a substitution, with a penalty function that increases with the number of attempts:
 
 ```typescript
-// Comparison between "hello" and "h3lloooooo" with up to 3 attempts and double penalty per attempt:
+// Comparison between "hello" and "h3lloooooo" with up to 3 penalty clamps and double penalty per attempt:
 const fullModeScore = calculatePHCSimilarity("hello", "h3lloooooo", 3, attempt => attempt * 2, 'full');
 
 // Calculation details:
@@ -59,7 +59,7 @@ const fullModeScore = calculatePHCSimilarity("hello", "h3lloooooo", 3, attempt =
 // - 'e' is substituted by '3', counting as one edit error.
 // - Both 'l's match directly.
 // - 'o' matches directly.
-// - Each additional 'o' counts as a deletion error, with the penalty increasing until the max retry limit is reached and then stays constant.
+// - Each additional 'o' counts as a deletion error, with the penalty increasing until the max penalty clamp is reached and then stays constant.
 // Penalty calculation: 2 (1st 'o' error) + 4 (2nd 'o' error) + 6 + 6 + 6 (subsequent 'o' errors with max penalty)
 // Total penalty: 26
 // Similarity score is calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 26):
