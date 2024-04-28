@@ -1,312 +1,322 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PHC Similarity Pipeline</title>
-<style>
-    .main-container {
-        width: 100%;
-        overflow-x: auto;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-    }
-
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background-color: #f4f4f4;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    .pipeline {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        justify-content: flex-start;
-    }
-    
-    .container {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        min-width: 200px;
-        white-space: normal;
-    }
-    
-    .list-container {
-        overflow-y: auto;
-        max-height: 200px;
-        width: 100%;
-    }
-    
-    .list-item {
-        font-size: 0.9em;
-        color: #333;
-        border-bottom: 1px solid #ddd;
-        padding: 5px;
-    }
-    
-    input[type="text"], input[type="range"], input[type="number"], button {
-        width: 100%;
-    }
-    
-    .arrow {
-        font-size: 2em;
-        user-select: none;
-    }
-    
-    .pipeline-title, .github-repo-link {
-        font-weight: bold;
-        user-select: none;
-    }
-    
-    .note {
-        background-color: #fffbe5;
-        border-left: 4px solid #fff200;
-        padding: 5px;
-        margin-top: 5px;
-        font-size: 0.8em;
-        color: #555;
-        border-radius: 4px;
-        max-width: 220px;
-        word-wrap: break-word;
-    }
-    
-    #thresholdContainer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .github-repo-link {
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #eee;
-        padding: 5px;
-        border-radius: 5px;
-        text-decoration: none;
-        color: #333;
-        z-index: 10;
-    }
-
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    @media (max-width: 1700px) {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHC Similarity Pipeline</title>
+    <style>
         .main-container {
-            align-items: flex-start;
+            width: 100%;
+            overflow-x: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-    }
-</style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .pipeline {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 200px;
+            white-space: normal;
+        }
+
+        .list-container {
+            overflow-y: auto;
+            max-height: 200px;
+            width: 100%;
+        }
+
+        .list-item {
+            font-size: 0.9em;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding: 5px;
+        }
+
+        input[type="text"],
+        input[type="range"],
+        input[type="number"],
+        button {
+            width: 100%;
+        }
+
+        .arrow {
+            font-size: 2em;
+            user-select: none;
+        }
+
+        .pipeline-title,
+        .github-repo-link {
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .note {
+            background-color: #fffbe5;
+            border-left: 4px solid #fff200;
+            padding: 5px;
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #555;
+            border-radius: 4px;
+            max-width: 220px;
+            word-wrap: break-word;
+        }
+
+        #thresholdContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .github-repo-link {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #eee;
+            padding: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            z-index: 10;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1700px) {
+            .main-container {
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
-    <body>
-        <div class="main-container">
-            <div class="github-repo-link">
-                <a href="https://github.com/pedrohcdo/PHC-Similarity" target="_blank">Visit the GitHub Repo</a>
+
+<body>
+    <div class="main-container">
+        <div class="github-repo-link">
+            <a href="https://github.com/pedrohcdo/PHC-Similarity" target="_blank">Visit the GitHub Repo</a>
+        </div>
+        <div class="pipeline">
+            <span class="pipeline-title">Pipeline</span>
+            <span class="arrow">→</span>
+
+            <!-- Initial Words -->
+            <div class="container">
+                <h3>Initial Words</h3>
+                <input type="text" id="newWord" placeholder="Add new word">
+                <button onclick="addWord()">Add Word</button>
+                <div class="list-container" id="wordList"></div>
             </div>
-            <div class="pipeline">
-                <span class="pipeline-title">Pipeline</span>
-                <span class="arrow">→</span>
-            
-                <!-- Initial Words -->
-                <div class="container">
-                    <h3>Initial Words</h3>
-                    <input type="text" id="newWord" placeholder="Add new word">
-                    <button onclick="addWord()">Add Word</button>
-                    <div class="list-container" id="wordList"></div>
-                </div>
-                <span class="arrow">→</span>
-                
-                <!-- Comparison Settings -->
-                <div class="container">
-                    <h3>PHC Similarity Settings</h3>
-                    <input type="text" id="comparisonText" placeholder="Comparison text" value="accordion">
-                    <div class="note">Enter a word or phrase to compare against the initial list.</div>
-                    
-                    <label for="penaltyClamp">Penalty Clamp: <span id="clampValue">3</span></label>
-                    <input type="range" id="penaltyClamp" min="1" max="5" value="3" oninput="document.getElementById('clampValue').textContent = value">
-                    <div class="note">Adjust the maximum limit for penalty scaling. This clamp value sets the upper bound for how much the penalty can increase with each subsequent mismatch.</div>
-                    
-                    <input type="text" id="penaltyFunction" value="x*2">
-                    <div class="note">Define the penalty function (e.g., x*2 for doubling the penalty each time).</div>
-                </div>
-                <span class="arrow">→</span>
-            
-                <!-- All Words with Similarity -->
-                <div class="container">
-                    <h3>All Words</h3>
-                    <div class="list-container" id="allWords"></div>
-                </div>
-                <span class="arrow">→</span>
-                
-                <!-- Threshold -->
-                <div class="container" id="thresholdContainer">
-                    <label>Threshold:</label>
-                    <input type="number" id="threshold" value="0.5" min="0" max="1" step="0.01">
-                </div>
-                <span class="arrow">→</span>
-                
-                <!-- Filtered Words -->
-                <div class="container">
-                    <h3>Filtered Words</h3>
-                    <div class="list-container" id="filteredWords"></div>
-                </div>
+            <span class="arrow">→</span>
+
+            <!-- Comparison Settings -->
+            <div class="container">
+                <h3>PHC Similarity Settings</h3>
+                <input type="text" id="comparisonText" placeholder="Comparison text" value="accordion">
+                <div class="note">Enter a word or phrase to compare against the initial list.</div>
+
+                <label for="penaltyClamp">Penalty Clamp: <span id="clampValue">3</span></label>
+                <input type="range" id="penaltyClamp" min="1" max="5" value="3"
+                    oninput="document.getElementById('clampValue').textContent = value">
+                <div class="note">Adjust the maximum limit for penalty scaling. This clamp value sets the upper bound
+                    for how much the penalty can increase with each subsequent mismatch.</div>
+
+                <input type="text" id="penaltyFunction" value="x*2">
+                <div class="note">Define the penalty function (e.g., x*2 for doubling the penalty each time).</div>
+            </div>
+            <span class="arrow">→</span>
+
+            <!-- All Words with Similarity -->
+            <div class="container">
+                <h3>All Words</h3>
+                <div class="list-container" id="allWords"></div>
+            </div>
+            <span class="arrow">→</span>
+
+            <!-- Threshold -->
+            <div class="container" id="thresholdContainer">
+                <label>Threshold:</label>
+                <input type="number" id="threshold" value="0.5" min="0" max="1" step="0.01">
+            </div>
+            <span class="arrow">→</span>
+
+            <!-- Filtered Words -->
+            <div class="container">
+                <h3>Filtered Words</h3>
+                <div class="list-container" id="filteredWords"></div>
             </div>
         </div>
+    </div>
 
-        <script>
-            const initialWords = [
-                "accordion", "accordions", "accord", "accordanceeeeee", "accordant",
-                "accorded", "accordionisttt", "accooooossssssteddd", "accounted", "accolade",
-                "accccollllaaaades", "accoooooutttttter", "accoutrements", "accretion", "accreditation",
-                "accrued", "accuuuuuuumulllllllate", "accurate", "accursed", "accusssation",
-                "accusative", "accuuuuuusssssssatory", "accuse", "acccused", "accuser",
-                "accccuuuuses", "accusing", "accccustom", "accustomed", "accustoming",
-                "coordiiinate", "coordination", "coordinator", "coordinating", "acoustic",
-                "acoooustics", "acolyte", "acolytes", "acorn", "acorns"
-            ];
-            
-            const wordList = document.getElementById('wordList');
-            const allWords = document.getElementById('allWords');
-            const filteredWords = document.getElementById('filteredWords');
-            
-            // Initial populate of word list
-            populateWordList(initialWords, wordList);
-            updateAll()
-            
-            document.getElementById('newWord').addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    addWord();
-                }
-            });
-            
-            document.getElementById('comparisonText').addEventListener('input', updateAll);
-            document.getElementById('penaltyClamp').addEventListener('input', updateAll);
-            document.getElementById('penaltyFunction').addEventListener('input', updateAll);
-            document.getElementById('threshold').addEventListener('input', updateAll);
-            
-            function addWord() {
-                const newWordInput = document.getElementById('newWord');
-                const newWord = newWordInput.value.trim();
-                if (newWord) {
-                    initialWords.push(newWord);
-                    populateWordList(initialWords, wordList);
-                    newWordInput.value = ''; // Clear the input box
-                    updateAll(); // Update filtered words list
-                }
+    <script>
+        const initialWords = [
+            "accordion", "accordions", "accord", "accordanceeeeee", "accordant",
+            "accorded", "accordionisttt", "accooooossssssteddd", "accounted", "accolade",
+            "accccollllaaaades", "accoooooutttttter", "accoutrements", "accretion", "accreditation",
+            "accrued", "accuuuuuuumulllllllate", "accurate", "accursed", "accusssation",
+            "accusative", "accuuuuuusssssssatory", "accuse", "acccused", "accuser",
+            "accccuuuuses", "accusing", "accccustom", "accustomed", "accustoming",
+            "coordiiinate", "coordination", "coordinator", "coordinating", "acoustic",
+            "acoooustics", "acolyte", "acolytes", "acorn", "acorns"
+        ];
+
+        const wordList = document.getElementById('wordList');
+        const allWords = document.getElementById('allWords');
+        const filteredWords = document.getElementById('filteredWords');
+
+        // Initial populate of word list
+        populateWordList(initialWords, wordList);
+        updateAll()
+
+        document.getElementById('newWord').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                addWord();
             }
-            
-            function populateWordList(words, container) {
-                container.innerHTML = words.map(word => `<div class="list-item">${word}</div>`).join('');
+        });
+
+        document.getElementById('comparisonText').addEventListener('input', updateAll);
+        document.getElementById('penaltyClamp').addEventListener('input', updateAll);
+        document.getElementById('penaltyFunction').addEventListener('input', updateAll);
+        document.getElementById('threshold').addEventListener('input', updateAll);
+
+        function addWord() {
+            const newWordInput = document.getElementById('newWord');
+            const newWord = newWordInput.value.trim();
+            if (newWord) {
+                initialWords.push(newWord);
+                populateWordList(initialWords, wordList);
+                newWordInput.value = ''; // Clear the input box
+                updateAll(); // Update filtered words list
             }
-            
-            function updateAll() {
-                updateAllWords()
-                updateFilteredWords()
-            }
-            
-            function updateAllWords() {
-                const comparisonText = document.getElementById('comparisonText').value;
-                const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
-                const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
-                const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
-                
-                allWords.innerHTML = initialWords
-                    .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
-                    .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
-                    .join('');
-            }
-            
-            function updateFilteredWords() {
-                const threshold = parseFloat(document.getElementById('threshold').value);
-                const comparisonText = document.getElementById('comparisonText').value;
-                const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
-                const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
-                const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
-            
-                filteredWords.innerHTML = initialWords
-                    .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
-                    .filter(item => item.similarity > threshold)
-                    .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
-                    .join('');
-            }
-            
-            function calculatePHCSimilarity(firstText, secondText, penaltyClamp, penaltyFunction, mode = 'full') {
-                const dp = new Array(firstText.length + 1).fill(0).map(() => 
-                    new Array(secondText.length + 1).fill(0).map(() => {
-                        return new Array(penaltyClamp).fill(0).map(() => {
-                            return [0, 0]
-                        })
+        }
+
+        function populateWordList(words, container) {
+            container.innerHTML = words.map(word => `<div class="list-item">${word}</div>`).join('');
+        }
+
+        function updateAll() {
+            updateAllWords()
+            updateFilteredWords()
+        }
+
+        function updateAllWords() {
+            const comparisonText = document.getElementById('comparisonText').value;
+            const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
+            const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
+            const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
+
+            allWords.innerHTML = initialWords
+                .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
+                .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
+                .join('');
+        }
+
+        function updateFilteredWords() {
+            const threshold = parseFloat(document.getElementById('threshold').value);
+            const comparisonText = document.getElementById('comparisonText').value;
+            const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
+            const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
+            const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
+
+            filteredWords.innerHTML = initialWords
+                .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
+                .filter(item => item.similarity > threshold)
+                .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
+                .join('');
+        }
+
+        function calculatePHCSimilarity(firstText, secondText, penaltyClamp, penaltyFunction, mode = 'full') {
+            const dp = new Array(firstText.length + 1).fill(0).map(() =>
+                new Array(secondText.length + 1).fill(0).map(() => {
+                    return new Array(penaltyClamp).fill(0).map(() => {
+                        return [0, 0]
                     })
-                );
-            
-                const similarity = ([corrects, wrongs]) => {
-                    if(corrects + wrongs === 0) return 0
-                    return corrects / (corrects + wrongs);
+                })
+            );
+
+            const similarity = ([corrects, wrongs]) => {
+                if (corrects + wrongs === 0) return 0
+                return corrects / (corrects + wrongs);
+            }
+
+            const clamp = penaltyClamp - 1;
+
+            // Laterals
+            for (let i = 1; i <= firstText.length; i++) {
+                for (let a = 0; a < penaltyClamp; a++) {
+                    dp[i][0][a][1] = penaltyFunction(penaltyClamp - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
                 }
-            
-                const clamp = penaltyClamp - 1;
-            
-                // Laterals
-                for(let i=1; i<=firstText.length; i++) {
-                    for(let a=0; a<penaltyClamp; a++) {
-                        dp[i][0][a][1] = penaltyFunction(penaltyClamp - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
-                    }
+            }
+            for (let i = 1; i <= secondText.length; i++) {
+                for (let a = 0; a < penaltyClamp; a++) {
+                    dp[0][i][a][1] = penaltyFunction(penaltyClamp - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
                 }
-                for(let i=1; i<=secondText.length; i++) {
-                    for(let a=0; a<penaltyClamp; a++) {
-                        dp[0][i][a][1] = penaltyFunction(penaltyClamp - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
-                    }
-                }
-                
-                //
-                for(let i=0; i<firstText.length; i++) {
-                    for(let j=0; j<secondText.length; j++) {
-                        for(let a=0; a<penaltyClamp; a++) {
-                            if(firstText.charAt(i) === secondText.charAt(j)) {
-                                dp[i+1][j+1][a][0] = 1 + dp[i][j][clamp][0]
-                                dp[i+1][j+1][a][1] = dp[i][j][clamp][1]
-                            } else {
-                                const retry = Math.max(a-1, 0);
-                                const cuts = []
-                                if(['edit', 'full'].includes(mode)) cuts.push(dp[i][j][retry])
-                                if(['delete', 'full'].includes(mode)) cuts.push(dp[i+1][j][retry], dp[i][j+1][retry])
-                                const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift()
-                                dp[i+1][j+1][a][0] = bestCut[0]
-                                dp[i+1][j+1][a][1] = penaltyFunction(penaltyClamp - a) + bestCut[1]
-                            }
+            }
+
+            //
+            for (let i = 0; i < firstText.length; i++) {
+                for (let j = 0; j < secondText.length; j++) {
+                    for (let a = 0; a < penaltyClamp; a++) {
+                        if (firstText.charAt(i) === secondText.charAt(j)) {
+                            dp[i + 1][j + 1][a][0] = 1 + dp[i][j][clamp][0]
+                            dp[i + 1][j + 1][a][1] = dp[i][j][clamp][1]
+                        } else {
+                            const retry = Math.max(a - 1, 0);
+                            const cuts = []
+                            if (['edit', 'full'].includes(mode)) cuts.push(dp[i][j][retry])
+                            if (['delete', 'full'].includes(mode)) cuts.push(dp[i + 1][j][retry], dp[i][j + 1][retry])
+                            const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift()
+                            dp[i + 1][j + 1][a][0] = bestCut[0]
+                            dp[i + 1][j + 1][a][1] = penaltyFunction(penaltyClamp - a) + bestCut[1]
                         }
                     }
                 }
-            
-                //
-                return similarity(dp[firstText.length][secondText.length][clamp]);
             }
-    
-        </script>
-    </body>
+
+            //
+            return similarity(dp[firstText.length][secondText.length][clamp]);
+        }
+
+    </script>
+</body>
+
 </html>
