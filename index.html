@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PHC Similarity Test</title>
+<title>PHC Similarity Pipeline</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -14,38 +14,95 @@
         background-color: #f4f4f4;
         margin: 0;
     }
-    .container {
+    .container, .list-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 20px;
         background-color: #fff;
-        padding: 40px;
+        padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         border-radius: 8px;
+        margin: 10px;
     }
-    .result {
-        margin-top: 20px;
-        font-size: 1.2em;
+    .horizontal {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        overflow-x: auto;
+    }
+    .result, .list-item {
+        margin-top: 10px;
+        font-size: 1em;
         color: #333;
     }
-    input[type="text"], input[type="range"], button {
+    input[type="text"], input[type="range"], button, select {
         width: 100%;
+    }
+    #thresholdDisplay {
+        text-align: center;
+        font-weight: bold;
+        margin: 20px;
+        background-color: transparent;
+        box-shadow: none;
     }
 </style>
 </head>
-<body onload="calculateSimilarity()">
-<div class="container">
-    <input type="text" id="text1" placeholder="Enter first text" value="ola">
-    <input type="text" id="text2" placeholder="Enter second text" value="ola">
-    <label for="maxAttempts">Max Retry Attempts: <span id="retryValue">3</span></label>
-    <input type="range" id="maxAttempts" min="1" max="10" value="3" oninput="document.getElementById('retryValue').textContent = value">
-    <input type="text" id="penaltyFunction" placeholder="Enter penalty function, e.g., x*2" value="x*2">
-    <button onclick="calculateSimilarity()">Calculate Similarity</button>
-    <div id="result" class="result">Result: </div>
+<body>
+<div class="horizontal">
+    <div class="container">
+        <h3>Initial Words</h3>
+        <input type="text" id="newWord" placeholder="Add new word">
+        <button onclick="addWord()">Add Word</button>
+        <div class="list-container" id="wordList">
+            <!-- Initial words will be added by JavaScript -->
+        </div>
+    </div>
+    
+    <div class="container">
+        <h3>Comparison Settings</h3>
+        <input type="text" id="comparisonText" placeholder="Comparison text" value="strategicWord">
+        <label for="penaltyClamp">Penalty Clamp: <span id="clampValue">3</span></label>
+        <input type="range" id="penaltyClamp" min="1" max="10" value="3" oninput="document.getElementById('clampValue').textContent = value">
+        <input type="text" id="penaltyFunction" value="x*2">
+    </div>
+    
+    <div id="thresholdDisplay">
+        Threshold: <input type="number" id="threshold" value="0.5" min="0" max="1" step="0.01">
+    </div>
+    
+    <div class="container">
+        <h3>Filtered Words</h3>
+        <div class="list-container" id="filteredWords">
+            <!-- Filtered words will appear here -->
+        </div>
+    </div>
 </div>
 
 <script>
+const initialWords = ["strategicWord1", "strategicWord2", /* Add 28 more words */];
+const wordList = document.getElementById('wordList');
+const filteredWords = document.getElementById('filteredWords');
+
+function addWord() {
+    const newWord = document.getElementById('newWord').value;
+    if (newWord) {
+        initialWords.push(newWord);
+        populateWordList();
+        document.getElementById('newWord').value = ''; // Clear the input box
+    }
+}
+
+function populateWordList() {
+    wordList.innerHTML = '';
+    initialWords.forEach(word => {
+        const div = document.createElement('div');
+        div.textContent = word;
+        div.className = 'list-item';
+        wordList.appendChild(div);
+    });
+}
+
 function calculatePHCSimilarity(firstText, secondText, maxAttempts, penaltyFunction, mode = 'full') {
     const dp = new Array(firstText.length + 1).fill(null).map(() => 
         new Array(secondText.length + 1).fill(null).map(() => 
@@ -93,16 +150,31 @@ function calculatePHCSimilarity(firstText, secondText, maxAttempts, penaltyFunct
     return similarity(dp[firstText.length][secondText.length][attempts]);
 }
 
-function calculateSimilarity() {
-    const text1 = document.getElementById('text1').value;
-    const text2 = document.getElementById('text2').value;
-    const maxAttempts = parseInt(document.getElementById('maxAttempts').value, 10);
-    const penaltyFuncStr = document.getElementById('penaltyFunction').value;
-    const penaltyFunction = new Function('x', 'return ' + penaltyFuncStr);
-    
-    const result = calculatePHCSimilarity(text1, text2, maxAttempts, penaltyFunction);
-    document.getElementById('result').textContent = 'Result: ' + result.toFixed(2);
+function updateFilteredWords() {
+    const comparisonText = document.getElementById('comparisonText').value;
+    const clamp = parseInt(document.getElementById('penaltyClamp').value, 10);
+    const penaltyFunc = new Function('x', 'return ' + document.getElementById('penaltyFunction').value);
+    const threshold = parseFloat(document.getElementById('threshold').value);
+
+    filteredWords.innerHTML = '';
+    initialWords.forEach(word => {
+        const similarity = calculatePHCSimilarity(word, clamp, penaltyFunc);
+        if (similarity >= threshold) {
+            const div = document.createElement('div');
+            div.textContent = `${word} - ${similarity.toFixed(2)}%`;
+            div.className = 'list-item';
+            filteredWords.appendChild(div);
+        }
+    });
 }
+
+// Initialize word list and set up event listeners
+populateWordList();
+document.getElementById('comparisonText').addEventListener('input', updateFilteredWords);
+document.getElementById('penaltyClamp').addEventListener('input', updateFilteredWords);
+document.getElementById('penaltyFunction').addEventListener('input', updateFilteredWords);
+document.getElementById('threshold').addEventListener('input', updateFilteredWords);
+
 </script>
 </body>
 </html>
