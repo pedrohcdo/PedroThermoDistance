@@ -1,14 +1,14 @@
 /**
- * Calculates the PHC Similarity between two strings based on a defined penalty function, a maximum number of retry attempts, and a specified comparison mode.
- * This function uses dynamic programming to efficiently determine the similarity, with the time complexity of O(firstText * secondText * maxAttempts).
- * The mode parameter allows the function to operate in different modes: 'delete' only counts deletions, 'edit' allows deletions and substitutions, and 'full' includes deletions, insertions, and substitutions.
+ * Calculates the PHC Similarity between two strings based on a defined penalty function, a maximum penalty clamp, and a specified comparison mode.
+ * This function leverages a dynamic programming approach to efficiently determine the similarity, with the time complexity of O(firstText * secondText * penaltyClamp).
+ * The mode parameter allows the function to operate in either 'delete' or 'levenshtein' mode. In 'delete' mode, only deletions are counted as errors, while 'levenshtein' mode also considers substitutions and insertions, potentially reducing the total error count for similar characters.
  *
  * @param {string} firstText - The first string to compare. This could represent a name or any sequence of characters.
  * @param {string} secondText - The second string to compare. Similar to firstText, this is a sequence of characters.
- * @param {number} maxAttempts - The maximum number of retry attempts allowed when characters between the two strings do not match.
+ * @param {number} penaltyClamp - The maximum clamp value for penalty attempts, defining how penalties increase for retries beyond the first mismatch. This value limits the severity of the penalty applied, capping the negative impact of repeated mismatches.
  * @param {Function} penaltyFunction - A callback function that applies a penalty for each retry attempt beyond the first match.
  *                                      The function takes the number of the current attempt as an argument and returns a numerical penalty.
- * @param {'delete' | 'edit' | 'full'} mode - The mode of operation for the comparison: 'delete' for deletions only, 'edit' for deletions and substitutions, and 'full' for deletions, insertions, and substitutions.
+ * @param {'delete' | 'levenshtein'} mode - The mode of operation for the comparison: 'delete' only allows character deletions, while 'levenshtein' allows deletions, insertions, and substitutions.
  *
  * @returns {number} The calculated similarity score between 0 and 1, where 0 indicates no similarity and 1 indicates identical strings.
  *                   The score is calculated as the ratio of matched characters to the total number of characters adjusted by the penalty for retries,
@@ -33,11 +33,11 @@
  * // Similarity score is then calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 24):
  * console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (attempt) => attempt * 2, 'full')); // Outputs 0.1333..
  */
-function calculatePHCSimilarity(firstText: string, secondText: string, maxAttempts: number, penaltyFunction: (attempt: number) => number, mode: 'edit' | 'delete' | 'full' = 'full') {
+function calculatePHCSimilarity(firstText: string, secondText: string, penaltyClamp: number, penaltyFunction: (attempt: number) => number, mode: 'edit' | 'delete' | 'full' = 'full') {
 
     const dp: [number, number][][][] = new Array(firstText.length + 1).fill(0).map(() => 
         new Array(secondText.length + 1).fill(0).map(() => {
-            return new Array(maxAttempts).fill(0).map(() => {
+            return new Array(penaltyClamp).fill(0).map(() => {
                 return [0, 0]
             })
         })
@@ -48,27 +48,27 @@ function calculatePHCSimilarity(firstText: string, secondText: string, maxAttemp
         return corrects / (corrects + wrongs);
     }
 
-    const attempts = maxAttempts - 1;
+    const clamp = penaltyClamp - 1;
 
     // Laterals
     for(let i=1; i<=firstText.length; i++) {
-        for(let a=0; a<maxAttempts; a++) {
-            dp[i][0][a][1] = penaltyFunction(maxAttempts - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
+        for(let a=0; a<penaltyClamp; a++) {
+            dp[i][0][a][1] = penaltyFunction(penaltyClamp - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
         }
     }
     for(let i=1; i<=secondText.length; i++) {
-        for(let a=0; a<maxAttempts; a++) {
-            dp[0][i][a][1] = penaltyFunction(maxAttempts - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
+        for(let a=0; a<penaltyClamp; a++) {
+            dp[0][i][a][1] = penaltyFunction(penaltyClamp - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
         }
     }
     
     //
     for(let i=0; i<firstText.length; i++) {
         for(let j=0; j<secondText.length; j++) {
-            for(let a=0; a<maxAttempts; a++) {
+            for(let a=0; a<penaltyClamp; a++) {
                 if(firstText.charAt(i) === secondText.charAt(j)) {
-                    dp[i+1][j+1][a][0] = 1 + dp[i][j][attempts][0]
-                    dp[i+1][j+1][a][1] = dp[i][j][attempts][1]
+                    dp[i+1][j+1][a][0] = 1 + dp[i][j][clamp][0]
+                    dp[i+1][j+1][a][1] = dp[i][j][clamp][1]
                 } else {
                     const retry = Math.max(a-1, 0);
                     const cuts = []
@@ -76,14 +76,14 @@ function calculatePHCSimilarity(firstText: string, secondText: string, maxAttemp
                     if(['delete', 'full'].includes(mode)) cuts.push(dp[i+1][j][retry], dp[i][j+1][retry])
                     const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift()!
                     dp[i+1][j+1][a][0] = bestCut[0]
-                    dp[i+1][j+1][a][1] = penaltyFunction(maxAttempts - a) + bestCut[1]
+                    dp[i+1][j+1][a][1] = penaltyFunction(penaltyClamp - a) + bestCut[1]
                 }
             }
         }
     }
 
     //
-    return similarity(dp[firstText.length][secondText.length][attempts]);
+    return similarity(dp[firstText.length][secondText.length][clamp]);
 }
 
 
