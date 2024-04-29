@@ -33,11 +33,26 @@
  * // Similarity score is then calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 24):
  * console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (attempt) => attempt * 2, 'full')); // Outputs 0.1333..
  */
-function calculatePHCSimilarity(firstText: string, secondText: string, penaltyClamp: number, penaltyFunction: (attempt: number) => number, mode: 'edit' | 'delete' | 'full' = 'full') {
+function calculatePHCSimilarity(
+        firstText: string, 
+        secondText: string, 
+        penaltyClamp: number, 
+        penaltyFunction: (match: boolean, attempt: number) => number, 
+        mode: ('edit' | 'delete' | 'transversal')[] | null = ['edit', 'delete', 'transversal'],
+        options: { editScore: number, deleteScore: number, transversalScore: number } = {
+            editScore: 0.1,
+            deleteScore: 0,
+            transversalScore: 0.3
+        }
+    ) {
+    
+    mode ||= ['edit', 'delete', 'transversal']
+
+    const barometer = penaltyClamp * 2 + 1
 
     const dp: [number, number][][][] = new Array(firstText.length + 1).fill(0).map(() => 
         new Array(secondText.length + 1).fill(0).map(() => {
-            return new Array(penaltyClamp).fill(0).map(() => {
+            return new Array(barometer).fill(0).map(() => {
                 return [0, 0]
             })
         })
@@ -52,42 +67,85 @@ function calculatePHCSimilarity(firstText: string, secondText: string, penaltyCl
 
     // Laterals
     for(let i=1; i<=firstText.length; i++) {
-        for(let a=0; a<penaltyClamp; a++) {
-            dp[i][0][a][1] = penaltyFunction(penaltyClamp - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
+        for(let a=0; a<barometer; a++) {
+            const centered = Math.min(a - penaltyClamp, -1)
+            const worst = Math.max(centered + penaltyClamp - 1, 0)
+        
+            dp[i][0][a][1] = penaltyFunction(false, Math.abs(centered)) + dp[i - 1][0][worst][1];
         }
     }
     for(let i=1; i<=secondText.length; i++) {
-        for(let a=0; a<penaltyClamp; a++) {
-            dp[0][i][a][1] = penaltyFunction(penaltyClamp - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
+        for(let a=0; a<barometer; a++) {
+            const centered = Math.min(a - penaltyClamp, -1)
+            const worst = Math.max(centered + penaltyClamp - 1, 0)
+
+            dp[0][i][a][1] = penaltyFunction(false, Math.abs(centered)) + dp[0][i - 1][worst][1];
         }
     }
-    
+
     //
     for(let i=0; i<firstText.length; i++) {
         for(let j=0; j<secondText.length; j++) {
-            for(let a=0; a<penaltyClamp; a++) {
+            for(let a=0; a<barometer; a++) {
+          
+                const cutsCandidates: [number, number][] = []
+
+                //
                 if(firstText.charAt(i) === secondText.charAt(j)) {
-                    dp[i+1][j+1][a][0] = 1 + dp[i][j][clamp][0]
-                    dp[i+1][j+1][a][1] = dp[i][j][clamp][1]
-                } else {
-                    const retry = Math.max(a-1, 0);
-                    const cuts = []
-                    if(['edit', 'full'].includes(mode)) cuts.push(dp[i][j][retry])
-                    if(['delete', 'full'].includes(mode)) cuts.push(dp[i+1][j][retry], dp[i][j+1][retry])
-                    const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift()!
-                    dp[i+1][j+1][a][0] = bestCut[0]
-                    dp[i+1][j+1][a][1] = penaltyFunction(penaltyClamp - a) + bestCut[1]
+                    const centered = Math.max(1, a - penaltyClamp)
+                    const best = Math.min(barometer - 1, centered + penaltyClamp + 1)
+                    const cost = penaltyFunction(true, centered)
+
+                    cutsCandidates.push([dp[i][j][best][0] + cost, dp[i][j][best][1]])
+
                 }
+
+                //
+                const transversal = (i >= 1 && j >= 1) 
+                                    && (firstText.charAt(i-1) === secondText.charAt(j) 
+                                    && firstText.charAt(i) === secondText.charAt(j-1))
+
+                const centered = Math.min(a - penaltyClamp, -1)
+                const worst = Math.max(centered + penaltyClamp - 1, 0)
+                const cost = penaltyFunction(false, Math.abs(centered))
+
+                
+                if(mode.includes('edit')) {
+                    cutsCandidates.push([dp[i][j][worst][0] + (options?.editScore || 0), cost + dp[i][j][worst][1]])
+                }
+                if(mode.includes('delete')) {
+                    cutsCandidates.push([dp[i+1][j][worst][0] + (options?.deleteScore || 0), cost + dp[i+1][j][worst][1]])
+                    cutsCandidates.push([dp[i][j+1][worst][0] + (options?.deleteScore || 0), cost + dp[i][j+1][worst][1]])
+                }
+                if(mode.includes('transversal') && transversal) {
+                    cutsCandidates.push([dp[i-1][j-1][worst][0] + (options?.transversalScore || 0), cost + dp[i-1][j-1][worst][1]])
+                }
+
+                const bestCut = cutsCandidates
+                                    .sort((a, b) => similarity(b) - similarity(a))
+                                    .shift()! || [0, 0]
+                
+                dp[i+1][j+1][a][0] = bestCut[0]
+                dp[i+1][j+1][a][1] = bestCut[1]
+
+                //if(similarity(dp[i+1][j+1][Math.max(a-1, 0)]) > similarity(dp[i+1][j+1][a])) {
+                //    dp[i+1][j+1][a] = [...dp[i+1][j+1][Math.max(a-1, 0)]]
+                //}
             }
         }
     }
 
+    let best = similarity(dp[firstText.length][secondText.length][0])
+    for(let i=0; i<barometer; i++) {
+        best = Math.max(best, similarity(dp[firstText.length][secondText.length][i]))
+    }
     //
-    return similarity(dp[firstText.length][secondText.length][clamp]);
+    return best;
 }
 
 
 
-console.log(calculatePHCSimilarity("hello", "h3llo", 3, (attempt) => attempt * 2, 'delete')); 
-console.log(calculatePHCSimilarity("hello", "h3llo", 3, (attempt) => attempt * 2, 'edit'));
-console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (attempt) => Math.sqrt(attempt/3), 'full'));
+
+console.log(calculatePHCSimilarity("hello", "h3llo", 3, (attempt) => attempt * 2)); 
+console.log(calculatePHCSimilarity("hello", "h3llo", 3, (attempt) => attempt * 2));
+console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (attempt) => Math.sqrt(attempt/3)));
