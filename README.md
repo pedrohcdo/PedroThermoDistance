@@ -1,4 +1,4 @@
-# Pedro Penalty Similarity & Thermo Similarity Algorithm
+# Pedro Penalty Similarity & Thermo Similarity Algorithms
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
