@@ -32,7 +32,7 @@
  * // Penalty calculation: 2 (1st 'o' error) + 4 (2nd 'o' error) + 6 + 6 + 6 (subsequent 'o' errors with max penalty)
  * // Total penalty: 24
  * // Similarity score is then calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 24):
- * console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (attempt) => attempt * 2)); // Outputs 0.1333..
+ * console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (match, attempt) => attempt * 2)); // Outputs ~0.35..
  */
 function calculatePHCSimilarity(
         firstText: string, 
