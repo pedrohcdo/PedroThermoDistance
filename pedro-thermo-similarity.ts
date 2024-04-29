@@ -1,38 +1,21 @@
 /**
- * Calculates the PHC Similarity V2 between two strings based on a defined penalty function, a maximum penalty clamp, and specified comparison modes.
- * This function leverages a dynamic programming approach to efficiently determine the similarity, with the time complexity of O(firstText.length * secondText.length * penaltyClamp).
- * The mode parameter allows specifying the types of operations considered during comparison: 'edit', 'delete', and 'transversal'. Each mode adjusts how the similarity is calculated, 
- * allowing for more nuanced error handling based on the operational requirements.
+ * Computes a detailed similarity score between two strings using a dynamic programming approach with a novel 'thermometer' mechanism.
+ * This function allows specifying comparison modes (edit, delete, transversal) and incorporates a custom penalty function that dynamically affects the similarity scoring based on 'thermometerSize'.
+ * The 'thermometerSize' defines the range and granularity of penalty application, influencing the impact of each string operation.
+ * Each character operation can either increase or decrease the similarity score based on the operational mode and the applied penalties.
  *
- * @param {string} firstText - The first string to compare. This could represent a name or any sequence of characters.
- * @param {string} secondText - The second string to compare. Similar to firstText, this is a sequence of characters.
- * @param {number} penaltyClamp - The maximum clamp value for penalty attempts, defining how penalties increase for retries beyond the first mismatch. This value limits the severity of the penalty applied, capping the negative impact of repeated mismatches.
- * @param {Function} penaltyFunction - A callback function that applies a penalty for each retry attempt beyond the first match. The function takes a boolean indicating if the match was successful and the number of the current attempt, returning a numerical penalty.
- * @param {Array} mode - An array of operation modes for the comparison: 'edit', 'delete', and 'transversal'. 'edit' allows character substitutions, 'delete' only allows deletions, and 'transversal' permits swapping of adjacent characters.
- * @param {Object} options - Configuration options for scores, where each operation type ('edit', 'delete', 'transversal') can have an associated score that impacts the final similarity.
+ * @param {string} firstText - The first string to compare, typically a sequence of characters.
+ * @param {string} secondText - The second string to compare.
+ * @param {number} thermometerSize - Defines the granularity and range of the thermometer mechanism which is central to calculating penalties.
+ * @param {Function} costFunction - A callback function to calculate the penalty based on the match success and the attempt number, which reflects how 'hot' or 'cold' the match is in the thermometer context.
+ * @param {('edit' | 'delete' | 'transversal')[]} mode - An array of operation modes that specify allowable character operations. The default includes all modes.
+ * @param {Object} options - Configuration options for scores, with individual scores assignable to each operation type (edit, delete, transversal).
  *
- * @returns {number} The calculated similarity score between 0 and 1, where 0 indicates no similarity and 1 indicates identical strings.
- *                   The score is calculated as the ratio of matched characters to the total number of operations adjusted by the penalty for retries,
- *                   taking into account the operational mode which alters the error count and penalty application.
+ * @returns {number} A similarity score between 0 and 1, calculated based on the ratio of correct matches to total operations, adjusted for penalties.
  *
  * Example usage:
- * const similarityScoreDelete = calculatePHCSimilarity("hello", "h3llo", 3, (match, attempt) => match ? attempt * 2 : attempt * 3, ['delete'], {deleteScore: 0.1,editScore:0,transversalScore:0});
- * const similarityScoreEdit = calculatePHCSimilarity("hello", "h3llo", 3, (match, attempt) => match ? attempt * 2 : attempt * 3, ['edit', 'transversal'], {editScore: 0.2, transversalScore: 0.3,transversalScore:0});
- * console.log(similarityScoreDelete); // Outputs ~0.69
- * console.log(similarityScoreEdit); // Outputs ~0.87
- *
- * // Detailed example with 'full' mode and multiple deletions handled:
- * // Example shows the calculation when additional characters are present and how penalties are applied:
- * // "hello" compared to "h3lloooooo", with maximum retries set to 3 and penalty function as double the attempt number:
- * // - 'h' matches directly.
- * // - 'e' is substituted by '3', counting as one edit error.
- * // - Both 'l's match directly.
- * // - 'o' matches directly.
- * // - Each additional 'o' counts as a deletion error, with the penalty increasing until the max retry limit is reached and then stays constant.
- * // Penalty calculation: 2 (1st 'o' error) + 4 (2nd 'o' error) + 6 + 6 + 6 (subsequent 'o' errors with max penalty)
- * // Total penalty: 24
- * // Similarity score is then calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 24):
- * console.log(calculatePHCSimilarity("hello", "h3lloooooo", 3, (match, attempt) => attempt * 2)); // Outputs ~0.35..
+ * const similarityScore = PedroThermoSimilarityPass("hello", "h3llo", 3, (match, attempt) => match ? attempt * 2 : attempt * 3, ['edit', 'transversal'], {editScore: 0.2, transversalScore: 0.3});
+ * console.log(similarityScore); // ~0.89
  */
 function PedroThermoSimilarityPass(
     firstText: string,
@@ -68,7 +51,7 @@ function PedroThermoSimilarityPass(
     for (let i = 1; i <= firstText.length; i++) {
         for (let a = 0; a < thermometerWidth; a++) {
             const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-            const cost = costFunction(false, weighted * thermometerSize)
+            const cost = costFunction(false, weighted * thermometerSize + 1)
             if(cost < 0)
                 throw new Error('The penalty function cannot return a value less than 0.')
             dp[i][0][a][1] = cost + dp[i - 1][0][Math.max(a - 1, 0)][1];
@@ -77,7 +60,7 @@ function PedroThermoSimilarityPass(
     for (let i = 1; i <= secondText.length; i++) {
         for (let a = 0; a < thermometerWidth; a++) {
             const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-            const cost = costFunction(false, weighted * thermometerSize)
+            const cost = costFunction(false, weighted * thermometerSize + 1)
             if(cost < 0)
                 throw new Error('The penalty function cannot return a value less than 0.')
             dp[0][i][a][1] = cost + dp[0][i - 1][Math.max(a - 1, 0)][1];
@@ -104,7 +87,7 @@ function PedroThermoSimilarityPass(
                     && firstText.charAt(i) === secondText.charAt(j - 1))
 
                 const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-                const cost = costFunction(false, weighted * thermometerSize)
+                const cost = costFunction(false, weighted * thermometerSize + 1)
                 if(cost < 0)
                     throw new Error('The penalty function cannot return a value less than 0.')
                 const cold = Math.max(a - 1, 0)
@@ -139,6 +122,24 @@ function PedroThermoSimilarityPass(
     return similarity(dp[firstText.length][secondText.length][thermometerSize]);
 }
 
+/**
+ * This function wraps the PedroThermoSimilarityPass function to calculate similarity scores from four different perspectives: 
+ * original to original, reversed to reversed, original to reversed, and reversed to original. This approach provides a robust 
+ * measure of similarity that accounts for variations in the order of characters and potential symmetrical relationships in strings.
+ *
+ * @param {string} firstText - The original first string for comparison.
+ * @param {string} secondText - The original second string for comparison.
+ * @param {number} thermometerSize - The size of the thermometer, which determines the granularity of the penalty mechanism.
+ * @param {Function} costFunction - A function that applies a penalty based on the match success and attempt number.
+ * @param {('edit' | 'delete' | 'transversal')[]} mode - Allowed modes of operation for string comparison; defaults to all modes if null.
+ * @param {Object} options - Scoring options for different types of operations, influencing the final similarity score.
+ *
+ * @returns {number} The highest similarity score obtained from the four different comparisons, offering a comprehensive measure of similarity.
+ *
+ * Example usage:
+ * const similarityScore = calculatePedroThermoSimilarity("helloooo", "xxhexllooxxoo", 5, (match, attempt) => match ? attempt : (6 - attempt), null, {editScore: 0.2, transversalScore: 0.3});
+ * console.log(similarityScore); // Outputs the best similarity score among the four calculated perspectives.
+ */
 function calculatePedroThermoSimilarity(
     firstText: string,
     secondText: string,
@@ -176,7 +177,7 @@ const options = {
 
 const costFunction = (match: boolean, attempt: number) => {
     if(!match) 
-        return ((thermometerSize + 1) - attempt) // first wrong word has more weight
+        return ((thermometerSize + 2) - attempt) // first wrong word has more weight
     return attempt
 }
 
