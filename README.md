@@ -1,16 +1,16 @@
-# PHC (Pedro Henrique Chaves) Similarity Algorithm
+# Pedro Penalty Similarity Algorithm and Pedro Thermo Similarity Algorithm
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
 ## Introduction
-The PHC Similarity Algorithm (Pedro Henrique Chaves Similarity) was developed to calculate the similarity between two strings based on a defined penalty function and a maximum penalty clamp. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
+The PedroPenaltySimilarity and PedroThermoSimilarity Algorithm was developed to calculate the similarity between two strings based on a defined cost function and a maximum penalty clamp or thermometer size. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
 
 ## Description
-The PHC Similarity utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * penaltyClamp), making it suitable for real-time analyses where efficiency is crucial.
+The algorithm utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * penaltyClamp) for PedroPenaltySimilarity and O(firstText * secondText * thermometer) for PedroThermoSimilarity, making it suitable for real-time analyses where efficiency is crucial.
 
 ## Live Demo
 
-Try the PHC Similarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and penalty clamp limits.
+Try the PedroPenaltySimilarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and penalty clamp limits.
 
 [Try PHC Similarity Live](https://pedrohcdo.github.io/PHC-Similarity/)
 
