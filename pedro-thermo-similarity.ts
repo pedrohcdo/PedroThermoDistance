@@ -1,24 +1,18 @@
 /**
- * Computes a detailed similarity score between two strings using a dynamic programming approach with a novel 'thermometer' mechanism.
- * This function allows specifying comparison modes (edit, delete, transversal) and incorporates a custom penalty function that dynamically affects the similarity scoring based on 'thermometerSize'.
- * The 'thermometerSize' defines the range and granularity of penalty application, influencing the impact of each string operation.
- * Each character operation can either increase or decrease the similarity score based on the operational mode and the applied penalties.
- *
- * @param {string} firstText - The first string to compare, typically a sequence of characters.
- * @param {string} secondText - The second string to compare.
- * @param {number} thermometerSize - Defines the granularity and range of the thermometer mechanism which is central to calculating penalties.
- * @param {Function} costFunction - A callback function to calculate the penalty based on the match success and the attempt number, which reflects how 'hot' or 'cold' the match is in the thermometer context.
- * @param {('edit' | 'delete' | 'transversal')[]} mode - An array of operation modes that specify allowable character operations. The default includes all modes.
- * @param {Object} options - Configuration options for scores, with individual scores assignable to each operation type (edit, delete, transversal).
- *
- * @returns {number} A similarity score between 0 and 1, calculated based on the ratio of correct matches to total operations, adjusted for penalties.
- *
- * Example usage:
- * const similarityScore = PedroThermoSimilarityPass("hello", "h3llo", 3, (match, attempt) => match ? attempt * 2 : attempt * 3, ['edit', 'transversal'], {editScore: 0.2, transversalScore: 0.3});
- * console.log(similarityScore); // ~0.89
+ * PedroThermoDistance is used for computing detailed similarity scores between two strings using a dynamic programming approach with a novel 'thermometer' mechanism.
+ * The similarity score is calculated based on the ratio of correct matches to total operations, adjusted for penalties, and can be influenced by various parameters such as thermometer size, heating, and cooling.
  */
 class PedroThermoDistance {
-
+    
+    /**
+     * Constructs a PedroThermoDistance instance.
+     * @param {string} firstText - The first string to compare.
+     * @param {string} secondText - The second string to compare.
+     * @param {number} thermometerSize - Defines the granularity and range of the thermometer mechanism, which influences the penalty application.
+     * @param {Object} [options] - Configuration options for heating and cooling rates.
+     * @param {number} [options.heating=1] - The rate at which the 'thermometer' heats up during matching attempts.
+     * @param {number} [options.cooling=1] - The rate at which the 'thermometer' cools down between matching attempts.
+     */
     private constructor(
         private firstText: string,
         private secondText: string,
@@ -32,7 +26,17 @@ class PedroThermoDistance {
                 cooling: 1
             }
     ) { }
-
+    
+     /**
+     * Constructs a PedroThermoDistance instance from given parameters.
+     * @param {string} firstText - The first string to compare.
+     * @param {string} secondText - The second string to compare.
+     * @param {number} thermometerSize - Defines the granularity and range of the thermometer mechanism.
+     * @param {Object} [options] - Configuration options for heating and cooling rates.
+     * @param {number} [options.heating=1] - The rate at which the 'thermometer' heats up during matching attempts.
+     * @param {number} [options.cooling=1] - The rate at which the 'thermometer' cools down between matching attempts.
+     * @returns {PedroThermoDistance} A new instance of PedroThermoDistance class.
+     */
     static from(
         firstText: string,
         secondText: string,
@@ -130,7 +134,12 @@ class PedroThermoDistance {
     get thermometerWidth() {
         return this.thermometerSize * 2 + 1
     }
-
+    
+    /**
+     * Traverses the alignment path between two strings from one direction to calculate similarity scores.
+     * @param {number} [impulse=1] - The impulse factor influencing the traversal.
+     * @returns {Object} An object containing information about the alignment path and measurements.
+     */
     private traverseTo(impulse: number = 1, directionDim: 0 | 1 = 0) {
         let i = this.firstText.length - 1
         let j = this.secondText.length - 1
@@ -199,7 +208,12 @@ class PedroThermoDistance {
             measurements
         }
     }
-
+    
+    /**
+     * Traverses the alignment path between two strings from left to right and right to left direction to calculate similarity scores.
+     * @param {number} [impulse=1] - The impulse factor influencing the traversal.
+     * @returns {Object} An object containing information about the alignment path and measurements.
+     */
     traverse(impulse: number = 1) {
         const ltr = this.traverseTo(impulse, 0)
         const rtl = this.traverseTo(impulse, 1)
@@ -209,11 +223,22 @@ class PedroThermoDistance {
         }
     }
 
+    /**
+     * Computes the distance between two strings in either left-to-right (ltr) or right-to-left (rtl) direction.
+     * @param {number} [impulse=1] - The impulse factor influencing the distance calculation.
+     * @param {string} [direction='ltr'] - The direction of comparison, either 'ltr' (left-to-right) or 'rtl' (right-to-left).
+     * @returns {number} The distance between the two strings.
+     */
     distance(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
         const startOn = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
         return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
     }
-
+    
+    /**
+     * Computes the maximum possible distance between two strings.
+     * @param {number} [impulse=1] - The impulse factor influencing the maximum distance calculation.
+     * @returns {number} The maximum possible distance between the two strings.
+     */
     maxDistance(impulse: number = 1) {
         let maxDistance = 0
         let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
@@ -225,15 +250,33 @@ class PedroThermoDistance {
 
         return maxDistance
     }
-
+    
+    /**
+     * Computes the similarity score in a specific direction between two strings.
+     * @param {number} [impulse=1] - The impulse factor influencing the similarity calculation.
+     * @param {string} [direction='ltr'] - The direction of comparison, either 'ltr' (left-to-right) or 'rtl' (right-to-left).
+     * @returns {number} The similarity score between 0 and 1.
+     */
     similarityTo(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
         return 1 - this.distance(impulse, direction) / this.maxDistance(impulse)
     }
-
+    
+    /**
+     * Computes the global similarity score between two strings using a dynamic programming approach with a 'thermometer' mechanism.
+     * Global similarity is calculated based on the ratio of correct matches to total operations across the entire strings, adjusted for penalties.
+     * @param {number} impulse - The impulse factor influencing the global similarity calculation.
+     * @returns {number} The global similarity score between 0 and 1.
+     */
     similarity(impulse: number = 1) {
         return Math.max(this.similarityTo(impulse, 'ltr'), this.similarityTo(impulse, 'rtl'))
     }
-
+    
+    /**
+     * Computes the local similarity score between two strings using a dynamic programming approach with a 'thermometer' mechanism.
+     * Local similarity is calculated based on the ratio of correct matches to total operations within a local context, adjusted for penalties.
+     * @param {number} impulse - The impulse factor influencing the local similarity calculation.
+     * @returns {number} The local similarity score between 0 and 1.
+     */
     localSimilarity(impulse: number) {
         //
         function standardDeviation(measurements: number[]) {
@@ -258,6 +301,8 @@ class PedroThermoDistance {
     }
 }
 
+
+// Sample
 const textA = "Coca Cola"
 const textB = "xxxxCxolx"
 
