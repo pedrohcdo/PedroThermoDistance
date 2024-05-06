@@ -1,70 +1,52 @@
-# Pedro Penalty Similarity & Thermo Similarity Algorithms
+# Pedro Thermo Distance
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
 ## Introduction
-The PedroPenaltySimilarity and PedroThermoSimilarity Algorithm was developed to calculate the similarity between two strings based on a defined cost function and a maximum penalty clamp or thermometer size. The algorithm can operate in different modes, adjusting to various text comparison scenarios.
+The PedroThermoDistance algorithm calculates the similarity between two strings using a dynamic programming approach, which integrates a 'thermometer' mechanism to adjust for matching sensitivities dynamically. This approach allows the algorithm to adjust the penalty or reward during the string comparison based on heating and cooling rates, reflecting the dynamic nature of textual comparisons.
 
 ## Description
-The algorithm utilizes a dynamic programming approach to efficiently determine the similarity between two strings. The time complexity of the algorithm is O(firstText * secondText * penaltyClamp) for PedroPenaltySimilarity and O(firstText * secondText * thermometer) for PedroThermoSimilarity, making it suitable for real-time analyses where efficiency is crucial.
+The algorithm utilizes a novel method called the 'thermometer' mechanism to efficiently determine the similarity between two strings. The time complexity of PedroThermoDistance is O(firstText * secondText * thermometerSize), making it suitable for real-time analyses where efficiency is crucial.
 
 ## Live Demo
 
-Try the PedroPenaltySimilarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and penalty clamp limits.
+Experience the PedroThermoDistance algorithm live! Click the link below to access an interactive user interface where you can input strings and compare them using different thermometer sizes and heating or cooling rates.
 
 [Try PedroThermoDistance Live](https://pedrohcdo.github.io/PedroThermoDistance/)
 
-Use the text fields to input the strings you want to compare, adjust the slider to set the maximum penalty clamp, and modify the penalty function as needed. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
+Use the text fields to input the strings you want to compare, adjust the thermometer size, and modify the heating and cooling rates. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
 
 ### Operation Modes
-- **Delete**: This mode counts only deletions as errors.
-- **Edit**: Allows deletions and substitutions.
-- **Full**: Includes deletions, insertions, and substitutions.
+- **Local Similarity**: Computes the local similarity score using the PedroThermoDistance algorithm.
+- **Global Similarity**: Computes the global similarity score that accounts for the overall matching quality across the entire strings.
 
-### Penalty Function
-The penalty function is applied to each attempt beyond the first match and is crucial for adjusting the sensitivity of the algorithm to errors.
-
-### Argument Description
-The function `calculatePHCSimilarity` accepts five arguments, each playing a crucial role in calculating the similarity between two strings. Here is a detailed description of each argument:
-
-- **`firstText: string`**: The first text to be compared. It represents the base string in the comparison. It can be any sequence of characters, such as a name, phrase, or any other type of textual data.
-
-- **`secondText: string`**: The second text to be compared against the first. Similar to `firstText`, it must be a sequence of characters and is treated as the target text in the comparison.
-
-- **`penaltyClamp: number`**: The maximum clamp value for penalty attempts, which sets a limit on the severity of penalties applied after the first mismatch. This helps control the negative impact of increasing penalties on the similarity score, ensuring that excessive mismatches don't disproportionately affect the outcome.
-
-- **`penaltyFunction: (attempt: number) => number`**: A callback function that defines the penalty for each attempt beyond the first match. This function takes the current attempt number as an argument and returns a numerical penalty. The form of the penalty function can vary depending on the use case, and it significantly influences the similarity calculation by penalizing imperfect matches.
-
-- **`mode: 'delete' | 'edit' | 'full'`**: Defines the mode of operation of the function. The 'delete' mode allows only deletions, the 'edit' mode includes deletions and substitutions, and the 'full' mode covers deletions, insertions, and substitutions, offering the most flexible and comprehensive approach to string comparison.
+### Configuration Parameters
+- **`thermometerSize`:** This parameter defines the range and granularity of the thermometer mechanism, influencing how penalties and rewards are applied.
+- **`heating`:** This is the rate at which the 'thermometer' heats up after a match, increasing sensitivity to subsequent matches.
+- **`cooling`:** This is the rate at which the 'thermometer' cools down after a mismatch, decreasing sensitivity to subsequent matches.
 
 ## Usage Examples
 
-### Basic Comparison
-Here is how you would use the algorithm in 'delete' mode to compare two strings:
+### Simple Local Similarity Example
+Here is how you might use the algorithm to compare two strings for local similarity:
 
-```typescript
-const similarityScore = calculatePHCSimilarity("hello", "h3llo", 3, attempt => attempt * 2, 'delete');
-console.log(similarityScore); // Expected output may vary
-```
+yyyjavascript
+const ptd = PedroThermoDistance.from("hello", "hallo", 5, { heating: 3, cooling: 1 });
+const localSimilarityScore = ptd.localSimilarity(1);
+console.log(localSimilarityScore); // Expected output may vary
+yyy
 
-### Full Mode with Calculation Details
-This detailed example demonstrates how the algorithm calculates similarity in 'full' mode, considering multiple deletions and a substitution, with a penalty function that increases with the number of attempts:
+### Detailed Global Similarity Example
+This example demonstrates how the PedroThermoDistance calculates global similarity:
 
-```typescript
-// Comparison between "hello" and "h3lloooooo" with up to 3 penalty clamps and double penalty per attempt:
-const fullModeScore = calculatePHCSimilarity("hello", "h3lloooooo", 3, attempt => attempt * 2, 'full');
+yyyjavascript
+// Comparison between "hello" and "hallo" with a thermometer size of 5:
+const ptd = PedroThermoDistance.from("hello", "hallo", 5, { heating: 3, cooling: 2 });
+const globalSimilarityScore = ptd.similarity(1);
 
-// Calculation details:
-// - 'h' matches directly.
-// - 'e' is substituted by '3', counting as one edit error.
-// - Both 'l's match directly.
-// - 'o' matches directly.
-// - Each additional 'o' counts as a deletion error, with the penalty increasing until the max penalty clamp is reached and then stays constant.
-// Penalty calculation: 2 (1st 'o' error) + 4 (2nd 'o' error) + 6 + 6 + 6 (subsequent 'o' errors with max penalty)
-// Total penalty: 26
-// Similarity score is calculated as the number of matches (4) divided by the sum of matches and penalties (4 + 26):
-console.log(fullModeScore); // Example output: 0.13
-```
+// Detailed outputs:
+console.log(globalSimilarityScore); // Example output: 0.75
+yyy
 
 ## License
 
