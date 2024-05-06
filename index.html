@@ -48,6 +48,7 @@
             align-items: center;
             gap: 10px;
             min-width: 200px;
+            max-width: 300px;
             white-space: normal;
         }
 
@@ -90,7 +91,8 @@
             font-size: 0.8em;
             color: #555;
             border-radius: 4px;
-            max-width: 220px;
+            width: 100%;
+            box-sizing: border-box;
             word-wrap: break-word;
         }
 
@@ -150,7 +152,7 @@
 
             <!-- Comparison Settings -->
             <div class="container">
-                <h3>Pedro Thermo Distance Settings</h3>
+                <h3>PedroThermoDistance Settings</h3>
                 <input type="text" id="comparisonText" placeholder="Comparison text" value="accordion">
                 <div class="note">Enter a word or phrase to compare against the initial list.</div>
 
@@ -159,6 +161,14 @@
                     oninput="document.getElementById('clampValue').textContent = value">
                 <div class="note">Adjust the maximum limit for thermometer Size. This clamp value sets the upper bound
                     for how much the thermometer can increase or decrease with each subsequent mismatch.</div>
+
+                <input type="number" id="heatingRate" placeholder="Heating Rate" value="1" min="1">
+                <div class="note">Rate at which the thermometer heats up after each match, enhancing sensitivity to
+                    subsequent matches.</div>
+
+                <input type="number" id="coolingRate" placeholder="Cooling Rate" value="1" min="1">
+                <div class="note">Rate at which the thermometer cools down after each mismatch, reducing sensitivity to
+                    subsequent matches.</div>
             </div>
             <span class="arrow">→</span>
 
@@ -437,6 +447,8 @@
         document.getElementById('comparisonText').addEventListener('input', updateAll);
         document.getElementById('thermometerSize').addEventListener('input', updateAll);
         document.getElementById('threshold').addEventListener('input', updateAll);
+        document.getElementById('heatingRate').addEventListener('input', updateAll);
+        document.getElementById('coolingRate').addEventListener('input', updateAll);
 
         function addWord() {
             const newWordInput = document.getElementById('newWord');
@@ -461,9 +473,11 @@
         function updateAllWords() {
             const comparisonText = document.getElementById('comparisonText').value;
             const thermometerSize = parseFloat(document.getElementById('thermometerSize').value);
+            const heatingRate = parseInt(document.getElementById('heatingRate').value);
+            const coolingRate = parseInt(document.getElementById('coolingRate').value);
 
             allWords.innerHTML = initialWords
-                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, thermometerSize) }))
+                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, thermometerSize, { heating: heatingRate, cooling: coolingRate }) }))
                 .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
                 .join('');
         }
@@ -472,16 +486,18 @@
             const threshold = parseFloat(document.getElementById('threshold').value);
             const comparisonText = document.getElementById('comparisonText').value;
             const thermometerSize = parseFloat(document.getElementById('thermometerSize').value);
+            const heatingRate = parseInt(document.getElementById('heatingRate').value);
+            const coolingRate = parseInt(document.getElementById('coolingRate').value);
 
             filteredWords.innerHTML = initialWords
-                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, thermometerSize) }))
+                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, thermometerSize, { heating: heatingRate, cooling: coolingRate }) }))
                 .filter(item => item.similarity > threshold)
                 .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
                 .join('');
         }
 
-        function calculateLocalSimilarity(firstText, secondText, thermometerSize) {
-            return PedroThermoDistance.from(firstText, secondText, thermometerSize).localSimilarity(0);
+        function calculateLocalSimilarity(firstText, secondText, thermometerSize, options) {
+            return PedroThermoDistance.from(firstText, secondText, thermometerSize, options).localSimilarity(0);
         }
 
     </script>
