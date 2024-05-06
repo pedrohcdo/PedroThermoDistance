@@ -17,172 +17,259 @@
  * const similarityScore = PedroThermoSimilarityPass("hello", "h3llo", 3, (match, attempt) => match ? attempt * 2 : attempt * 3, ['edit', 'transversal'], {editScore: 0.2, transversalScore: 0.3});
  * console.log(similarityScore); // ~0.89
  */
-function PedroThermoSimilarityPass(
-    firstText: string,
-    secondText: string,
-    thermometerSize: number,
-    costFunction: (match: boolean, attempt: number) => number,
-    mode: ('edit' | 'delete' | 'transversal')[] | null = ['edit', 'delete', 'transversal'],
-    options: { editScore?: number, deleteScore?: number, transversalScore?: number } = {
-        editScore: 0.1,
-        deleteScore: 0,
-        transversalScore: 0.3
-    }
-) {
+class PedroThermoDistance {
 
-    mode ||= ['edit', 'delete', 'transversal']
+    private constructor(
+        private firstText: string,
+        private secondText: string,
+        private thermometerSize: number,
+        private dp: [number, number][][][],
+        private options: {
+            heating?: number,
+            cooling?: number
+        } | undefined = {
+                heating: 1,
+                cooling: 1
+            }
+    ) { }
 
-    const thermometerWidth = thermometerSize * 2 + 1
+    static from(
+        firstText: string,
+        secondText: string,
+        thermometerSize: number,
+        options: {
+            heating?: number,
+            cooling?: number
+        } | undefined = {
+                heating: 1,
+                cooling: 1
+            }
+    ) {
+        const thermometerWidth = thermometerSize * 2 + 1
 
-    const dp: [number, number][][][] = new Array(firstText.length + 1).fill(0).map(() =>
-        new Array(secondText.length + 1).fill(0).map(() => {
-            return new Array(thermometerWidth).fill(0).map(() => {
-                return [0, 0]
+        // [ltr, rtl][firstTextLen][secondTextLen][thermometerWidth]
+        const dp: [number, number][][][] = new Array(firstText.length + 1).fill(0).map(() =>
+            new Array(secondText.length + 1).fill(0).map(() => {
+                return new Array(thermometerWidth).fill(0).map(() => [0, 0])
             })
-        })
-    );
+        );
 
-    const similarity = ([corrects, wrongs]: [number, number]) => {
-        if (corrects + wrongs === 0) return 0
-        return corrects / (corrects + wrongs);
-    }
-
-    // Laterals
-    for (let i = 1; i <= firstText.length; i++) {
-        for (let a = 0; a < thermometerWidth; a++) {
-            const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-            const cost = costFunction(false, weighted * thermometerSize + 1)
-            if(cost < 0)
-                throw new Error('The penalty function cannot return a value less than 0.')
-            dp[i][0][a][1] = cost + dp[i - 1][0][Math.max(a - 1, 0)][1];
-        }
-    }
-    for (let i = 1; i <= secondText.length; i++) {
-        for (let a = 0; a < thermometerWidth; a++) {
-            const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-            const cost = costFunction(false, weighted * thermometerSize + 1)
-            if(cost < 0)
-                throw new Error('The penalty function cannot return a value less than 0.')
-            dp[0][i][a][1] = cost + dp[0][i - 1][Math.max(a - 1, 0)][1];
-        }
-    }
-
-    //
-    for (let i = 0; i < firstText.length; i++) {
-        for (let j = 0; j < secondText.length; j++) {
+        // Laterals
+        for (let i = 1; i <= firstText.length; i++) {
             for (let a = 0; a < thermometerWidth; a++) {
-                const cutsCandidates: [number, number][] = []
-
-                if (firstText.charAt(i) === secondText.charAt(j)) {
-                    const weighted = a / (thermometerWidth - 1)
-                    const cost = costFunction(true, weighted * thermometerSize + 1)
-                    if(cost < 0)
-                        throw new Error('The penalty function cannot return a value less than 0.')
-                    const cold = Math.min(a + 1, thermometerWidth - 1)
-                    cutsCandidates.push([dp[i][j][cold][0] + cost, dp[i][j][cold][1]])
-                }
-
-                const transversal = (i >= 1 && j >= 1)
-                    && (firstText.charAt(i - 1) === secondText.charAt(j)
-                    && firstText.charAt(i) === secondText.charAt(j - 1))
-
-                const weighted = (thermometerWidth - a - 1) / (thermometerWidth - 1)
-                const cost = costFunction(false, weighted * thermometerSize + 1)
-                if(cost < 0)
-                    throw new Error('The penalty function cannot return a value less than 0.')
-                const cold = Math.max(a - 1, 0)
-
-               
-                if (mode.includes('edit')) {
-                    cutsCandidates.push([dp[i][j][cold][0] + (options?.editScore || 0), cost + dp[i][j][cold][1]])
-                }
-                if (mode.includes('delete')) {
-                    cutsCandidates.push([dp[i + 1][j][cold][0] + (options?.deleteScore || 0), cost + dp[i + 1][j][cold][1]])
-                    cutsCandidates.push([dp[i][j + 1][cold][0] + (options?.deleteScore || 0), cost + dp[i][j + 1][cold][1]])
-                }
-                if (mode.includes('transversal') && transversal) {
-                    cutsCandidates.push([dp[i - 1][j - 1][cold][0] + (options?.transversalScore || 0), cost + dp[i - 1][j - 1][cold][1]])
-                }
-
-
-                let bestCut = cutsCandidates?.[0] || [0, 0]
-                for(let k=0; k<cutsCandidates.length; k++) {
-                    const candidate = cutsCandidates[k]
-                    if(similarity(candidate) >= similarity(bestCut)) 
-                        bestCut = candidate
-                }
-
-                dp[i + 1][j + 1][a][0] = bestCut[0]
-                dp[i + 1][j + 1][a][1] = bestCut[1]
+                dp[i][0][a][0] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerWidth - a);
+                dp[i][0][a][1] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerWidth - a);
             }
         }
+        for (let i = 1; i <= secondText.length; i++) {
+            for (let a = 0; a < thermometerWidth; a++) {
+                dp[0][i][a][0] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerWidth - a);
+                dp[0][i][a][1] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerWidth - a);
+            }
+        }
+
+        //
+        for (let i = 0; i < firstText.length; i++) {
+            for (let j = 0; j < secondText.length; j++) {
+                for (let a = 0; a < thermometerWidth; a++) {
+
+                    const cost = thermometerWidth - a
+                    const heat = Math.min(a + (options?.heating || 1), thermometerWidth - 1)
+                    const cold = Math.max(a - (options?.cooling || 1), 0)
+
+                    // Left to Right
+                    {
+                        const cutsCandidatesLTR: number[] = []
+
+                        // Normal Compare
+                        if (firstText.charAt(i) === secondText.charAt(j))
+                            cutsCandidatesLTR.push(dp[i][j][heat][0])
+
+                        // Delete
+                        cutsCandidatesLTR.push(dp[i + 1][j][cold][0] + cost)
+                        cutsCandidatesLTR.push(dp[i][j + 1][cold][0] + cost)
+
+                        // Transversal Compare
+                        const transversal = (i >= 1 && j >= 1)
+                            && (firstText.charAt(i - 1) === secondText.charAt(j)
+                                && firstText.charAt(i) === secondText.charAt(j - 1))
+                        if (transversal)
+                            cutsCandidatesLTR.push(dp[i - 1][j - 1][cold][0])
+
+                        dp[i + 1][j + 1][a][0] = Math.min(...cutsCandidatesLTR)
+                    }
+
+                    // Right to Left
+                    {
+                        const cutsCandidatesRTL: number[] = []
+
+                        // Normal Compare
+                        if (firstText.charAt(firstText.length - i - 1) === secondText.charAt(secondText.length - j - 1))
+                            cutsCandidatesRTL.push(dp[i][j][heat][1])
+
+                        // Delete
+                        cutsCandidatesRTL.push(dp[i + 1][j][cold][1] + cost)
+                        cutsCandidatesRTL.push(dp[i][j + 1][cold][1] + cost)
+
+                        // Transversal Compare
+                        const transversal = (i >= 1 && j >= 1)
+                            && (firstText.charAt(firstText.length - i) === secondText.charAt(secondText.length - j - 1)
+                                && firstText.charAt(firstText.length - i - 1) === secondText.charAt(secondText.length - j))
+                        if (transversal)
+                            cutsCandidatesRTL.push(dp[i - 1][j - 1][cold][1])
+
+                        dp[i + 1][j + 1][a][1] = Math.min(...cutsCandidatesRTL)
+                    }
+                }
+            }
+        }
+
+        return new PedroThermoDistance(firstText, secondText, thermometerSize, dp, options)
     }
 
-    //
-    return similarity(dp[firstText.length][secondText.length][thermometerSize]);
-}
-
-/**
- * This function wraps the PedroThermoSimilarityPass function to calculate similarity scores from four different perspectives: 
- * original to original, reversed to reversed, original to reversed, and reversed to original. This approach provides a robust 
- * measure of similarity that accounts for variations in the order of characters and potential symmetrical relationships in strings.
- *
- * @param {string} firstText - The original first string for comparison.
- * @param {string} secondText - The original second string for comparison.
- * @param {number} thermometerSize - The size of the thermometer, which determines the granularity of the penalty mechanism.
- * @param {Function} costFunction - A function that applies a penalty based on the match success and attempt number.
- * @param {('edit' | 'delete' | 'transversal')[]} mode - Allowed modes of operation for string comparison; defaults to all modes if null.
- * @param {Object} options - Scoring options for different types of operations, influencing the final similarity score.
- *
- * @returns {number} The highest similarity score obtained from the four different comparisons, offering a comprehensive measure of similarity.
- *
- * Example usage:
- * const similarityScore = calculatePedroThermoSimilarity("helloooo", "xxhexllooxxoo", 5, (match, attempt) => match ? attempt : (6 - attempt), null, {editScore: 0.2, transversalScore: 0.3});
- * console.log(similarityScore); // Outputs the best similarity score among the four calculated perspectives.
- */
-function calculatePedroThermoSimilarity(
-    firstText: string,
-    secondText: string,
-    thermometerSize: number,
-    costFunction: (match: boolean, attempt: number) => number,
-    mode: ('edit' | 'delete' | 'transversal')[] | null = ['edit', 'delete', 'transversal'],
-    options: { editScore?: number, deleteScore?: number, transversalScore?: number } = {
-        editScore: 0.1,
-        deleteScore: 0,
-        transversalScore: 0.3
+    get thermometerWidth() {
+        return this.thermometerSize * 2 + 1
     }
-) {
-    const reversedFirstText = firstText.split('').reverse().join('')
-    const reversedSecondText = secondText.split('').reverse().join('')
 
-    const ltr1 = PedroThermoSimilarityPass(firstText, secondText, thermometerSize, costFunction, mode, options)
-    const rtl1 = PedroThermoSimilarityPass(reversedFirstText, reversedSecondText, thermometerSize, costFunction, mode, options)
-    const ltr2 = PedroThermoSimilarityPass(firstText, reversedSecondText, thermometerSize, costFunction, mode, options)
-    const rtl2 = PedroThermoSimilarityPass(reversedFirstText, secondText, thermometerSize, costFunction, mode, options)
+    private traverseTo(impulse: number = 1, directionDim: 0 | 1 = 0) {
+        let i = this.firstText.length - 1
+        let j = this.secondText.length - 1
 
-    return Math.max(ltr1, rtl1, ltr2, rtl2)
+        let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+        let measurements: number[] = []
+
+        let matchedText1 = ""
+        let matchedText2 = ""
+        while (i >= 0 || j >= 0) {
+            if (i === -1) {
+                measurements.push(this.thermometerWidth - temperature)
+                matchedText2 = `-` + matchedText2
+                j--
+                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
+                continue
+            } else if (j === -1) {
+                measurements.push(this.thermometerWidth - temperature)
+                matchedText1 = '-' + matchedText1
+                i--
+                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
+                continue
+            }
+
+            let charPositionI = directionDim === 0 ? i : (this.firstText.length - i - 1)
+            let charPositionJ = directionDim === 0 ? j : (this.secondText.length - j - 1)
+
+            if (this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ)) {
+                measurements.push(0)
+                matchedText1 = this.firstText.charAt(charPositionI) + matchedText1
+                matchedText2 = this.secondText.charAt(charPositionJ) + matchedText2
+                temperature = Math.min(temperature + (this.options?.heating || 1), this.thermometerWidth - 1)
+                i--
+                j--
+                continue
+            }
+
+            let tDirection = directionDim === 0 ? -1 : 1
+            const transversal = (i >= 1 && j >= 1)
+                && (this.firstText.charAt(charPositionI + tDirection) === this.secondText.charAt(charPositionJ)
+                    && this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ + tDirection))
+
+            if (transversal) {
+                measurements.push(0)
+                matchedText1 = this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText1
+                matchedText2 = this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText2
+                i -= 2
+                j -= 2
+            } else if (this.dp[i + 1][j][temperature][directionDim] <= this.dp[i][j + 1][temperature][directionDim]) {
+                measurements.push(this.thermometerWidth - temperature)
+                matchedText2 = `-` + matchedText2
+                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
+                j--
+            } else {
+                measurements.push(this.thermometerWidth - temperature)
+                matchedText1 = '-' + matchedText1
+                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
+                i--
+            }
+        }
+
+        //
+        return {
+            matchedText1,
+            matchedText2,
+            measurements
+        }
+    }
+
+    traverse(impulse: number = 1) {
+        const ltr = this.traverseTo(impulse, 0)
+        const rtl = this.traverseTo(impulse, 1)
+        return {
+            ltr,
+            rtl
+        }
+    }
+
+    distance(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
+        const startOn = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+        return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
+    }
+
+    maxDistance(impulse: number = 1) {
+        let maxDistance = 0
+        let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+
+        for (let i = 0; i < (this.firstText.length + this.secondText.length); i++) {
+            maxDistance += this.thermometerWidth - temperature
+            temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
+        }
+
+        return maxDistance
+    }
+
+    similarityTo(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
+        return 1 - this.distance(impulse, direction) / this.maxDistance(impulse)
+    }
+
+    similarity(impulse: number = 1) {
+        return Math.max(this.similarityTo(impulse, 'ltr'), this.similarityTo(impulse, 'rtl'))
+    }
+
+    localSimilarity(impulse: number) {
+        //
+        function standardDeviation(measurements: number[]) {
+            let mean = measurements.reduce((prev, curr) => prev + curr, 0) / measurements.length
+            return Math.sqrt(measurements.reduce((prev, curr) => prev + Math.pow(curr - mean, 2), 0) / (measurements.length - 1))
+        }
+    
+        //
+        const { ltr, rtl } = this.traverse(impulse)
+    
+        const similarity1 = this.similarityTo(impulse, 'ltr')
+        const similarity1W = 1 - Math.abs(0.5 - similarity1) / 0.5
+        const standardDeviation1W = standardDeviation(ltr.measurements) * Math.pow(similarity1W, 2)
+        const localSimilarity1 = Math.min(1, similarity1 / Math.max(1, standardDeviation1W))
+    
+        const similarity2 = this.similarityTo(impulse, 'rtl')
+        const similarity2W = 1 - Math.abs(0.5 - similarity2) / 0.5
+        const standardDeviation2W = standardDeviation(rtl.measurements) * Math.pow(similarity2W, 2)
+        const localSimilarity2 = Math.min(1, similarity2 / Math.max(1, standardDeviation2W))
+    
+        return Math.max(localSimilarity1, localSimilarity2)
+    }
 }
 
-
-const textA = "helloooo"
-const textB = "xxhexllooxxoo"
+const textA = "Coca Cola"
+const textB = "xxxxCxolx"
 
 const thermometerSize = 5
+const impulse = 0
 
-const options = {
-    deleteScore: 0,
-    editScore: 0,
-    transversalScore: 0
-}
+let ptd = PedroThermoDistance.from(textA, textB, thermometerSize, {
+    heating: 5,
+    cooling: 2
+})
 
-const costFunction = (match: boolean, attempt: number) => {
-    if(!match) 
-        return ((thermometerSize + 2) - attempt) // first wrong word has more weight
-    return attempt
-}
-
-
-const pts = calculatePedroThermoSimilarity(textA, textB, thermometerSize, costFunction, null, options)
-
-
-console.log(pts)
+console.log({
+    localSimilarity: ptd.localSimilarity(impulse),
+    similarity: ptd.similarity(impulse)
+})
