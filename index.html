@@ -13,7 +13,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 50px;
+            justify-content: top;
             min-height: 100vh;
         }
 
@@ -36,6 +37,15 @@
             align-items: center;
             gap: 10px;
             justify-content: flex-start;
+            padding-bottom: 50px;
+        }
+
+        .words-cloud {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            justify-content: flex-start;
         }
 
         .container {
@@ -46,7 +56,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 10px 0px;
             min-width: 200px;
             max-width: 300px;
             white-space: normal;
@@ -104,16 +114,14 @@
         }
 
         .github-repo-link {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            display: flex;
+            width: 100%;
+            justify-content: center;
             background-color: #eee;
             padding: 5px;
             border-radius: 5px;
             text-decoration: none;
             color: #333;
-            z-index: 10;
         }
 
         body,
@@ -122,6 +130,27 @@
             padding: 0;
             height: 100%;
             overflow: hidden;
+        }
+
+        .words-clouds {
+            display: flex;
+            justify-content: space-around;
+            padding: 50px 0px;
+            gap: 20px;
+        }
+
+        .cloud {
+            width: 100px;
+            height: 100px;
+            /* Altura fixa para cada nuvem, ajustável conforme necessário */
+            background-color: #f8f8f8;
+            /* Fundo claro para as nuvens */
+            border: 1px solid #ccc;
+            /* Borda sutil para as nuvens */
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            /* Esconde qualquer overflow de texto */
         }
 
         @media (max-width: 1700px) {
@@ -133,6 +162,7 @@
 </head>
 
 <body>
+
     <div class="main-container">
         <div class="github-repo-link">
             <a href="https://github.com/pedrohcdo/PedroThermoDistance" target="_blank">Visit the GitHub Repo</a>
@@ -153,7 +183,7 @@
             <!-- Comparison Settings -->
             <div class="container">
                 <h3>PedroThermoDistance Settings</h3>
-                <input type="text" id="comparisonText" placeholder="Comparison text" value="accordion">
+                <input type="text" id="comparisonText" placeholder="Comparison text" value="hello">
                 <div class="note">Enter a word or phrase to compare against the initial list.</div>
 
                 <label for="thermometerSize">Thermometer Size: <span id="clampValue">3</span></label>
@@ -192,9 +222,29 @@
                 <div class="list-container" id="filteredWords"></div>
             </div>
         </div>
+        <div class="pipeline">
+            <span class="pipeline-title">Groups</span>
+            <span class="arrow">→</span>
+            <div class="words-cloud" id="wordsClouds"></div>
+        </div>
     </div>
 
-    <script>
+    <div id="loading"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgb(255, 255, 255); display: flex; justify-content: center; align-items: center; font-size: 2em; color: black;">
+        Carregando...
+    </div>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud/build/d3.layout.cloud.js"></script>
+    <script type="module">
+
+        import {
+            Levenshtein,
+            Jaro,
+            JaroWinkler,
+            DamerauLevenshtein,
+            OSA
+        } from 'https://cdn.jsdelivr.net/npm/hermetrics@1.2.15/+esm';
+
         class PedroThermoDistance {
             constructor(firstText, secondText, thermometerSize, dp, options = { heating: 1, cooling: 1 }) {
                 this.firstText = firstText;
@@ -295,7 +345,7 @@
                 let i = this.firstText.length - 1
                 let j = this.secondText.length - 1
 
-                let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+                let temperature = Math.round(Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse)))
                 let measurements = []
 
                 let matchedText1 = ""
@@ -370,13 +420,13 @@
             }
 
             distance(impulse = 1, direction = 'ltr') {
-                const startOn = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+                const startOn = Math.round(Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse)))
                 return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
             }
 
             maxDistance(impulse = 1) {
                 let maxDistance = 0
-                let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+                let temperature = Math.round(Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse)))
 
                 for (let i = 0; i < (this.firstText.length + this.secondText.length); i++) {
                     maxDistance += this.thermometerWidth - temperature
@@ -418,17 +468,131 @@
             }
         }
 
+        class KNN {
+            data;
+            k;
+
+            constructor(data, k) {
+                this.data = data;
+                this.k = k;
+            }
+
+            createClusters(calculateDistance) {
+                let clusters = [];
+                let visited = new Set();
+
+                const getNeighbors = (item, cluster) => {
+                    let distances = this.data
+                        .filter(x => !visited.has(x))
+                        .map((neighbor) => ({
+                            neighbor,
+                            distance: calculateDistance(item, neighbor)
+                        }))
+                        .filter(x => x.distance > 0.6)
+                        .sort((a, b) => b.distance - a.distance);
+
+                    let neighbors = distances.slice(0, this.k).map(d => d.neighbor);
+                    neighbors.forEach(n => {
+                        if (!visited.has(n)) {
+                            visited.add(n);
+                            cluster.push(n);
+                            getNeighbors(n, cluster);
+                        }
+                    });
+                };
+
+                // 
+                this.data.forEach(item => {
+                    if (!visited.has(item)) {
+                        let cluster = [];
+                        visited.add(item);
+                        cluster.push(item);
+                        getNeighbors(item, cluster);
+                        clusters.push(cluster);
+                    }
+                });
+
+                return clusters
+            }
+        }
+
+        window.addEventListener('load', function () {
+            document.getElementById('loading').style.display = 'none';
+        });
 
         const initialWords = [
-            "accordion", "accordions", "accord", "accordanceeeeee", "accordant",
-            "accorded", "accordionisttt", "accooooossssssteddd", "accounted", "accolade",
-            "accccollllaaaades", "accoooooutttttter", "accoutrements", "accretion", "accreditation",
-            "accrued", "accuuuuuuumulllllllate", "accurate", "accursed", "accusssation",
-            "accusative", "accuuuuuusssssssatory", "accuse", "acccused", "accuser",
-            "accccuuuuses", "accusing", "accccustom", "accustomed", "accustoming",
-            "coordiiinate", "coordination", "coordinator", "coordinating", "acoustic",
-            "acoooustics", "acolyte", "acolytes", "acorn", "acorns"
-        ];
+            "hello", "hallo", "holaaaa", "helloooouo",
+            "halloooudsouo", "hell", "kasdksjdshczygckb", "kakakak",
+            "coca cola", "cocaxxxcola", "cocaaaaaaaaa coxalaaaaa",
+            "haaslasladskdamsldscbc", "codkckjcdasn sok alkasal",
+            "hasjhasladssdkldscscbc", "ccocokcdococcoccolacola",
+            "testando dsdsdsd testando sdsdsd",
+            "sdfsxandsd xxcxcsfd dadqhdçkala wewew",
+        ]
+
+        const levenshtein = new Levenshtein()
+        const jaro = new Jaro()
+        const jaroWinkler = new JaroWinkler()
+        const damerauLevenshtein = new DamerauLevenshtein()
+        const osa = new OSA()
+
+        const algorithms = [
+            {
+                name: 'PedroThermoDistance',
+                callback: (a, b) => {
+                    const thermometerSize = parseInt(document.getElementById('thermometerSize').value);
+                    const heatingRate = parseInt(document.getElementById('heatingRate').value);
+                    const coolingRate = parseInt(document.getElementById('coolingRate').value);
+
+                    const ptd = PedroThermoDistance.from(a, b, thermometerSize, { heating: heatingRate, cooling: coolingRate })
+                    return ptd.localSimilarity(0.6)
+                }
+            },
+            { name: 'Levenshtein', callback: (a, b) => levenshtein.similarity(a, b) },
+            { name: 'Jaro', callback: (a, b) => jaro.similarity(a, b) },
+            { name: 'Jaro-Winkler', callback: (a, b) => jaroWinkler.similarity(a, b) },
+            { name: 'Damerau-Levenshtein', callback: (a, b) => damerauLevenshtein.similarity(a, b) },
+            { name: 'OSA', callback: (a, b) => osa.similarity(a, b) },
+        ]
+
+        function updateWordsClouds(allWords) {
+            const knn = new KNN(allWords, 3)
+            const wordsCloudsContainer = document.getElementById('wordsClouds');
+            wordsCloudsContainer.innerHTML = ''
+
+            function createList(algorithm) {
+                const container = document.createElement('div')
+                container.classList.add('container')
+
+                const title = document.createElement('h3')
+                title.textContent = algorithm
+
+                const listContainer = document.createElement('div')
+                listContainer.classList.add('list-container')
+
+                container.appendChild(title);
+                container.appendChild(listContainer);
+
+                wordsCloudsContainer.appendChild(container);
+
+                return listContainer
+            }
+
+            for (const alg of algorithms) {
+                const wordsCloud = knn.createClusters(alg.callback)
+
+                const list = createList(alg.name)
+
+                list.innerHTML = wordsCloud
+                    .reduce((prev, curr) => {
+                        return [...prev, '---', ...curr]
+                    }, [])
+                    .map(item => `<div class="list-item">${item}</div>`)
+                    .join('');
+            }
+
+        }
+
 
         const wordList = document.getElementById('wordList');
         const allWords = document.getElementById('allWords');
@@ -437,6 +601,7 @@
         // Initial populate of word list
         populateWordList(initialWords, wordList);
         updateAll()
+        updateWordsClouds(initialWords)
 
         document.getElementById('newWord').addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
@@ -468,6 +633,7 @@
         function updateAll() {
             updateAllWords()
             updateFilteredWords()
+            updateWordsClouds(initialWords)
         }
 
         function updateAllWords() {
