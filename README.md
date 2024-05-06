@@ -12,7 +12,7 @@ The algorithm utilizes a dynamic programming approach to efficiently determine t
 
 Try the PedroPenaltySimilarity algorithm live! Click the link below to access the interactive user interface where you can input texts and compare them using different penalty settings and penalty clamp limits.
 
-[Try PHC Similarity Live](https://pedrohcdo.github.io/PHC-Similarity/)
+[Try PHC Similarity Live](https://pedrohcdo.github.io/PedroThermoDistance/)
 
 Use the text fields to input the strings you want to compare, adjust the slider to set the maximum penalty clamp, and modify the penalty function as needed. Then, click the "Calculate Similarity" button to see the similarity score between the two strings.
 
