@@ -30,23 +30,23 @@ Use the text fields to input the strings you want to compare, adjust the thermom
 ### Simple Local Similarity Example
 Here is how you might use the algorithm to compare two strings for local similarity:
 
-yyyjavascript
+```javascript
 const ptd = PedroThermoDistance.from("hello", "hallo", 5, { heating: 3, cooling: 1 });
 const localSimilarityScore = ptd.localSimilarity(1);
 console.log(localSimilarityScore); // Expected output may vary
-yyy
+```
 
 ### Detailed Global Similarity Example
 This example demonstrates how the PedroThermoDistance calculates global similarity:
 
-yyyjavascript
+```javascript
 // Comparison between "hello" and "hallo" with a thermometer size of 5:
 const ptd = PedroThermoDistance.from("hello", "hallo", 5, { heating: 3, cooling: 2 });
 const globalSimilarityScore = ptd.similarity(1);
 
 // Detailed outputs:
 console.log(globalSimilarityScore); // Example output: 0.75
-yyy
+```
 
 ## License
 
