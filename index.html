@@ -133,7 +133,7 @@
 <body>
     <div class="main-container">
         <div class="github-repo-link">
-            <a href="https://github.com/pedrohcdo/PHC-Similarity" target="_blank">Visit the GitHub Repo</a>
+            <a href="https://github.com/pedrohcdo/PedroThermoDistance" target="_blank">Visit the GitHub Repo</a>
         </div>
         <div class="pipeline">
             <span class="pipeline-title">Pipeline</span>
@@ -159,9 +159,6 @@
                     oninput="document.getElementById('clampValue').textContent = value">
                 <div class="note">Adjust the maximum limit for penalty scaling. This clamp value sets the upper bound
                     for how much the penalty can increase with each subsequent mismatch.</div>
-
-                <input type="text" id="penaltyFunction" value="x*2">
-                <div class="note">Define the penalty function (e.g., x*2 for doubling the penalty each time).</div>
             </div>
             <span class="arrow">→</span>
 
@@ -182,7 +179,7 @@
             <!-- Filtered Words -->
             <div class="container">
                 <h3>Filtered Words</h3>
-                <div class="list-container" id="filteredWords"></div>
+                <div class="list-container" id="filteredWords"></div.
             </div>
         </div>
     </div>
@@ -215,7 +212,6 @@
 
         document.getElementById('comparisonText').addEventListener('input', updateAll);
         document.getElementById('penaltyClamp').addEventListener('input', updateAll);
-        document.getElementById('penaltyFunction').addEventListener('input', updateAll);
         document.getElementById('threshold').addEventListener('input', updateAll);
 
         function addWord() {
@@ -241,11 +237,9 @@
         function updateAllWords() {
             const comparisonText = document.getElementById('comparisonText').value;
             const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
-            const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
-            const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
-
+            
             allWords.innerHTML = initialWords
-                .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
+                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, penaltyClamp) }))
                 .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
                 .join('');
         }
@@ -254,66 +248,193 @@
             const threshold = parseFloat(document.getElementById('threshold').value);
             const comparisonText = document.getElementById('comparisonText').value;
             const penaltyClamp = parseFloat(document.getElementById('penaltyClamp').value);
-            const penaltyFunctionStr = document.getElementById('penaltyFunction').value;
-            const penaltyFunction = new Function('x', 'return ' + penaltyFunctionStr);
 
             filteredWords.innerHTML = initialWords
-                .map(word => ({ word, similarity: calculatePHCSimilarity(word, comparisonText, penaltyClamp, penaltyFunction) }))
+                .map(word => ({ word, similarity: calculateLocalSimilarity(word, comparisonText, penaltyClamp) }))
                 .filter(item => item.similarity > threshold)
                 .map(item => `<div class="list-item">${item.word} - ${(item.similarity * 100).toFixed(2)}%</div>`)
                 .join('');
         }
 
-        function calculatePHCSimilarity(firstText, secondText, penaltyClamp, penaltyFunction, mode = 'full') {
-            const dp = new Array(firstText.length + 1).fill(0).map(() =>
-                new Array(secondText.length + 1).fill(0).map(() => {
-                    return new Array(penaltyClamp).fill(0).map(() => {
-                        return [0, 0]
-                    })
-                })
-            );
+        function calculateLocalSimilarity(firstText, secondText, penaltyClamp) {
+            let ptd = PedroThermoDistance.from(firstText, secondText, penaltyClamp);
+            return ptd.localSimilarity(1);
+        }
 
-            const similarity = ([corrects, wrongs]) => {
-                if (corrects + wrongs === 0) return 0
-                return corrects / (corrects + wrongs);
+        class PedroThermoDistance {
+            constructor(firstText, secondText, thermometerSize, dp, options = { heating: 1, cooling: 1 }) {
+                this.firstText = firstText;
+                this.secondText = secondText;
+                this.thermometerSize = thermometerSize;
+                this.dp = dp;
+                this.options = options;
             }
-
-            const clamp = penaltyClamp - 1;
-
-            // Laterals
-            for (let i = 1; i <= firstText.length; i++) {
-                for (let a = 0; a < penaltyClamp; a++) {
-                    dp[i][0][a][1] = penaltyFunction(penaltyClamp - a) + dp[i - 1][0][Math.max(a - 1, 0)][1];
+        
+            static from(firstText, secondText, thermometerSize, options = { heating: 1, cooling: 1 }) {
+                const thermometerWidth = thermometerSize * 2 + 1;
+                const dp = Array.from({ length: firstText.length + 1 }, () =>
+                    Array.from({ length: secondText.length + 1 }, () =>
+                        Array.from({ length: thermometerWidth }, () => [0, 0])
+                    )
+                );
+        
+                for (let i = 1; i <= firstText.length; i++) {
+                    for (let a = 0; a < thermometerWidth; a++) {
+                        dp[i][0][a][0] = dp[i - 1][0][Math.max(a - (options.cooling), 0)][0] + (thermometerWidth - a);
+                        dp[i][0][a][1] = dp[i - 1][0][Math.max(a - (options.cooling), 0)][1] + (thermometerWidth - a);
+                    }
                 }
-            }
-            for (let i = 1; i <= secondText.length; i++) {
-                for (let a = 0; a < penaltyClamp; a++) {
-                    dp[0][i][a][1] = penaltyFunction(penaltyClamp - a) + dp[0][i - 1][Math.max(a - 1, 0)][1];
+        
+                for (let j = 1; j <= secondText.length; j++) {
+                    for (let a = 0; a < thermometerWidth; a++) {
+                        dp[0][j][a][0] = dp[0][j - 1][Math.max(a - (options.cooling), 0)][0] + (thermometerWidth - a);
+                        dp[0][j][a][1] = dp[0][j - 1][Math.max(a - (options.cooling), 0)][1] + (thermometerWidth - a);
+                    }
                 }
-            }
-
-            //
-            for (let i = 0; i < firstText.length; i++) {
-                for (let j = 0; j < secondText.length; j++) {
-                    for (let a = 0; a < penaltyClamp; a++) {
-                        if (firstText.charAt(i) === secondText.charAt(j)) {
-                            dp[i + 1][j + 1][a][0] = 1 + dp[i][j][clamp][0]
-                            dp[i + 1][j + 1][a][1] = dp[i][j][clamp][1]
-                        } else {
-                            const retry = Math.max(a - 1, 0);
-                            const cuts = []
-                            if (['edit', 'full'].includes(mode)) cuts.push(dp[i][j][retry])
-                            if (['delete', 'full'].includes(mode)) cuts.push(dp[i + 1][j][retry], dp[i][j + 1][retry])
-                            const bestCut = cuts.sort((a, b) => similarity(b) - similarity(a)).shift()
-                            dp[i + 1][j + 1][a][0] = bestCut[0]
-                            dp[i + 1][j + 1][a][1] = penaltyFunction(penaltyClamp - a) + bestCut[1]
+        
+                for (let i = 0; i < firstText.length; i++) {
+                    for (let j = 0; j < secondText.length; j++) {
+                        for (let a = 0; a < thermometerWidth; a++) {
+                            const cost = thermometerWidth - a;
+                            const heat = Math.min(a + (options.heating), thermometerWidth - 1);
+                            const cold = Math.max(a - (options.cooling), 0);
+        
+                            let cutsCandidatesLTR = [];
+                            if (firstText.charAt(i) === secondText.charAt(j)) {
+                                cutsCandidatesLTR.push(dp[i][j][heat][0]);
+                            }
+                            cutsCandidatesLTR.push(dp[i + 1][j][cold][0] + cost);
+                            cutsCandidatesLTR.push(dp[i][j + 1][cold][0] + cost);
+        
+                            dp[i + 1][j + 1][a][0] = Math.min(...cutsCandidatesLTR);
+        
+                            let cutsCandidatesRTL = [];
+                            if (firstText.charAt(firstText.length - i - 1) === secondText.charAt(secondText.length - j - 1)) {
+                                cutsCandidatesRTL.push(dp[i][j][heat][1]);
+                            }
+                            cutsCandidatesRTL.push(dp[i + 1][j][cold][1] + cost);
+                            cutsCandidatesRTL.push(dp[i][j + 1][cold][1] + cost);
+        
+                            dp[i + 1][j + 1][a][1] = Math.min(...cutsCandidatesRTL);
                         }
                     }
                 }
+        
+                return new PedroThermoDistance(firstText, secondText, thermometerSize, dp, options);
             }
-
-            //
-            return similarity(dp[firstText.length][secondText.length][clamp]);
+        
+            get thermometerWidth() {
+                return this.thermometerSize * 2 + 1;
+            }
+        
+            traverseTo(impulse = 1, directionDim = 0) {
+                let i = directionDim === 0 ? this.firstText.length - 1 : 0;
+                let j = directionDim === 0 ? this.secondText.length - 1 : 0;
+        
+                let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse));
+                let measurements = [];
+        
+                let matchedText1 = "";
+                let matchedText2 = "";
+                while (i >= 0 && j >= 0) {
+                    let charPositionI = directionDim === 0 ? i : (this.firstText.length - i - 1);
+                    let charPositionJ = directionDim === 0 ? j : (this.secondText.length - j - 1);
+        
+                    if (this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ)) {
+                        measurements.push(0);
+                        matchedText1 = this.firstText.charAt(charPositionI) + matchedText1;
+                        matchedText2 = this.secondText.charAt(charPositionJ) + matchedText2;
+                        temperature = Math.min(temperature + (this.options.heating || 1), this.thermometerWidth - 1);
+                        i--;
+                        j--;
+                        continue;
+                    }
+        
+                    let tDirection = directionDim === 0 ? -1 : 1;
+                    const transversal = (i >= 1 && j >= 1) &&
+                        (this.firstText.charAt(charPositionI + tDirection) === this.secondText.charAt(charPositionJ) &&
+                         this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ + tDirection));
+        
+                    if (transversal) {
+                        measurements.push(0);
+                        matchedText1 = this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText1;
+                        matchedText2 = this.firstText.charAt(charPositionJ) + this.secondText.charAt(charPositionJ + tDirection) + matchedText2;
+                        i -= 2;
+                        j -= 2;
+                    } else if (this.dp[i + 1][j][temperature][directionDim] <= this.dp[i][j + 1][temperature][directionDim]) {
+                        measurements.push(this.thermometerWidth - temperature);
+                        matchedText2 = `-` + matchedText2;
+                        temperature = Math.max(temperature - (this.options.cooling || 1), 0);
+                        j--;
+                    } else {
+                        measurements.push(this.thermometerWidth - temperature);
+                        matchedText1 = '-' + matchedText1;
+                        temperature = Math.max(temperature - (this.options.cooling || 1), 0);
+                        i--;
+                    }
+                }
+        
+                return {
+                    matchedText1,
+                    matchedText2,
+                    measurements
+                };
+            }
+        
+            traverse(impulse = 1) {
+                const ltr = this.traverseTo(impulse, 0);
+                const rtl = this.traverseTo(impulse, 1);
+                return {
+                    ltr,
+                    rtl
+                };
+            }
+        
+            distance(impulse = 1, direction = 'ltr') {
+                const startOn = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse));
+                return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1];
+            }
+        
+            maxDistance(impulse = 1) {
+                let maxDistance = 0;
+                let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse));
+        
+                for (let i = 0; i < (this.firstText.length + this.secondText.length); i++) {
+                    maxDistance += this.thermometerWidth - temperature;
+                    temperature = Math.max(temperature - (this.options.cooling || 1), 0);
+                }
+        
+                return maxDistance;
+            }
+        
+            similarityTo(impulse = 1, direction = 'ltr') {
+                return 1 - this.distance(impulse, direction) / this.maxDistance(impulse);
+            }
+        
+            similarity(impulse = 1) {
+                return Math.max(this.similarityTo(impulse, 'ltr'), this.similarityTo(impulse, 'rtl'));
+            }
+        
+            localSimilarity(impulse) {
+                function standardDeviation(measurements) {
+                    let mean = measurements.reduce((prev, curr) => prev + curr, 0) / measurements.length;
+                    return Math.sqrt(measurements.reduce((prev, curr) => prev + Math.pow(curr - mean, 2), 0) / (measurements.length - 1));
+                }
+        
+                const { ltr, rtl } = this.traverse(impulse);
+        
+                const similarity1 = this.similarityTo(impulse, 'ltr');
+                const similarity1W = 1 - Math.abs(0.5 - similarity1) / 0.5;
+                const standardDeviation1W = standardDeviation(ltr.measurements) * Math.pow(similarity1W, 2);
+                const localSimilarity1 = Math.min(1, similarity1 / Math.max(1, standardDeviation1W));
+        
+                const similarity2 = this.similarityTo(impulse, 'rtl');
+                const similarity2W = 1 - Math.abs(0.5 - similarity2) / 0.5;
+                const standardDeviation2W = standardDeviation(rtl.measurements) * Math.pow(similarity2W, 2);
+                const localSimilarity2 = Math.min(1, similarity2 / Math.max(1, standardDeviation2W));
+        
+                return Math.max(localSimilarity1, localSimilarity2);
+            }
         }
 
     </script>
