@@ -49,36 +49,44 @@ class PedroThermoDistance {
                 cooling: 1
             }
     ) {
-        const thermometerWidth = thermometerSize * 2 + 1
+        const heatings = options?.heating ?? 1
+        const cooling = options?.cooling ?? 1
+
+        if(thermometerSize < 1)
+            throw new Error('Thermometer size must be equal to or above 1.')
+        else if(heatings < 1 || (heatings%1) !== 0)
+            throw new Error('Heating must be equal to or greater than 1 and must be integer.')
+        else if(cooling < 1 || (cooling%1) !== 0)
+            throw new Error('Cooling must be equal to or greater than 1 and must be integer.')
 
         // [ltr, rtl][firstTextLen][secondTextLen][thermometerWidth]
         const dp: [number, number][][][] = new Array(firstText.length + 1).fill(0).map(() =>
             new Array(secondText.length + 1).fill(0).map(() => {
-                return new Array(thermometerWidth).fill(0).map(() => [0, 0])
+                return new Array(thermometerSize).fill(0).map(() => [0, 0])
             })
         );
 
         // Laterals
         for (let i = 1; i <= firstText.length; i++) {
-            for (let a = 0; a < thermometerWidth; a++) {
-                dp[i][0][a][0] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerWidth - a);
-                dp[i][0][a][1] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerWidth - a);
+            for (let a = 0; a < thermometerSize; a++) {
+                dp[i][0][a][0] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerSize - a);
+                dp[i][0][a][1] = dp[i - 1][0][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerSize - a);
             }
         }
         for (let i = 1; i <= secondText.length; i++) {
-            for (let a = 0; a < thermometerWidth; a++) {
-                dp[0][i][a][0] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerWidth - a);
-                dp[0][i][a][1] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerWidth - a);
+            for (let a = 0; a < thermometerSize; a++) {
+                dp[0][i][a][0] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][0] + (thermometerSize - a);
+                dp[0][i][a][1] = dp[0][i - 1][Math.max(a - (options?.cooling || 1), 0)][1] + (thermometerSize - a);
             }
         }
 
         //
         for (let i = 0; i < firstText.length; i++) {
             for (let j = 0; j < secondText.length; j++) {
-                for (let a = 0; a < thermometerWidth; a++) {
+                for (let a = 0; a < thermometerSize; a++) {
 
-                    const cost = thermometerWidth - a
-                    const heat = Math.min(a + (options?.heating || 1), thermometerWidth - 1)
+                    const cost = thermometerSize - a
+                    const heat = Math.min(a + (options?.heating || 1), thermometerSize - 1)
                     const cold = Math.max(a - (options?.cooling || 1), 0)
 
                     // Left to Right
@@ -131,10 +139,6 @@ class PedroThermoDistance {
         return new PedroThermoDistance(firstText, secondText, thermometerSize, dp, options)
     }
 
-    get thermometerWidth() {
-        return this.thermometerSize * 2 + 1
-    }
-    
     /**
      * Traverses the alignment path between two strings from one direction to calculate similarity scores.
      * @param {number} [impulse=1] - The impulse factor influencing the traversal.
@@ -144,20 +148,20 @@ class PedroThermoDistance {
         let i = this.firstText.length - 1
         let j = this.secondText.length - 1
 
-        let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+        let temperature = Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse))
         let measurements: number[] = []
 
         let matchedText1 = ""
         let matchedText2 = ""
         while (i >= 0 || j >= 0) {
             if (i === -1) {
-                measurements.push(this.thermometerWidth - temperature)
+                measurements.push(this.thermometerSize - temperature)
                 matchedText2 = `-` + matchedText2
                 j--
                 temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
                 continue
             } else if (j === -1) {
-                measurements.push(this.thermometerWidth - temperature)
+                measurements.push(this.thermometerSize - temperature)
                 matchedText1 = '-' + matchedText1
                 i--
                 temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
@@ -171,7 +175,7 @@ class PedroThermoDistance {
                 measurements.push(0)
                 matchedText1 = this.firstText.charAt(charPositionI) + matchedText1
                 matchedText2 = this.secondText.charAt(charPositionJ) + matchedText2
-                temperature = Math.min(temperature + (this.options?.heating || 1), this.thermometerWidth - 1)
+                temperature = Math.min(temperature + (this.options?.heating || 1), this.thermometerSize - 1)
                 i--
                 j--
                 continue
@@ -189,12 +193,12 @@ class PedroThermoDistance {
                 i -= 2
                 j -= 2
             } else if (this.dp[i + 1][j][temperature][directionDim] <= this.dp[i][j + 1][temperature][directionDim]) {
-                measurements.push(this.thermometerWidth - temperature)
+                measurements.push(this.thermometerSize - temperature)
                 matchedText2 = `-` + matchedText2
                 temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
                 j--
             } else {
-                measurements.push(this.thermometerWidth - temperature)
+                measurements.push(this.thermometerSize - temperature)
                 matchedText1 = '-' + matchedText1
                 temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
                 i--
@@ -230,7 +234,7 @@ class PedroThermoDistance {
      * @returns {number} The distance between the two strings.
      */
     distance(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
-        const startOn = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+        const startOn = Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse))
         return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
     }
     
@@ -241,10 +245,10 @@ class PedroThermoDistance {
      */
     maxDistance(impulse: number = 1) {
         let maxDistance = 0
-        let temperature = Math.max(0, Math.min(this.thermometerWidth - 1, (this.thermometerWidth - 1) * impulse))
+        let temperature = Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse))
 
         for (let i = 0; i < (this.firstText.length + this.secondText.length); i++) {
-            maxDistance += this.thermometerWidth - temperature
+            maxDistance += this.thermometerSize - temperature
             temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
         }
 
