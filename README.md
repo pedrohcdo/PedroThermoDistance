@@ -2,9 +2,6 @@
 
 [![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)
 
-
-Aqui está uma versão revisada e aprimorada da introdução e descrição do algoritmo PedroThermoDistance, agora incluindo os detalhes e exemplos que você forneceu:
-
 ## Introduction
 The ```PedroThermoDistance``` algorithm introduces a dynamic thermometer approach to calculating string similarity. Using a dynamic programming, it incorporates a unique 'thermometer' mechanism that dynamically adjusts penalties and rewards during the string comparison process. This mechanism simulates a thermometer's behavior, where consecutive matches increase the 'temperature' (leading to rewards), and mismatches decrease it (resulting in penalties). This design allows the algorithm to adapt to the flow of textual similarities and differences, making it ideal for applications that require differentiated text analysis that involve, for example: nuances, misspellings, and etc. With it, it is also possible to generate aligned texts, which makes it even more useful for some use cases that need detailed comparisons and reconciliations of textual data.
 
