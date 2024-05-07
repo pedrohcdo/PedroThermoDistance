@@ -20,17 +20,17 @@ This temperature adjustment is constrained by the thermometerSize, which sets th
 
   Starting at ```impulse=1``` (This implies that the thermometer starts hot at the limit which would be 3, this means that it starts out good, as if it had already hit several letters before.) ->  
     
-  Match 't', thermometer remains at maximum (when you get it right, there is no penalty, even the temperature is below 0): +0  
-  mismatch 'e', cools the thermometer by 1 and penalty the current temperature: +1  
-  mismatch 'x', cools the thermometer by 1 and penalty the current temperature: +2  
-  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3  
-  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3  
-  Match 's', the temperature heats up by 1 point (when you get it right, there is no penalty): +0  
-  Match 't', the temperature heats up by 1 point (when you get it right, there is no penalty): +0  
-  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0  
-  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0  
-  Match 'q', cools the thermometer by 1 and penalty the current temperature): +1  
-  Match 'u', cools the thermometer by 1 and penalty the current temperature): +2  
+  Match 't' - thermometer remains at maximum (when you get it right, there is no penalty, even the temperature is below 0): **+0**  
+  Mismatch 'e' - cools the thermometer by 1 and penalty the current temperature: **+1**  
+  Mismatch 'x' - cools the thermometer by 1 and penalty the current temperature: **+2**  
+  Mismatch 'x' - cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: **+3**  
+  Mismatch 'x' - cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: **+3**  
+  Match 's' - the temperature heats up by 1 point (when you get it right, there is no penalty): **+0**  
+  Match 't' - the temperature heats up by 1 point (when you get it right, there is no penalty): **+0**  
+  Match 'e' - thermometer remains at maximum (when you get it right, there is no penalty): **+0**  
+  Match 'e' - thermometer remains at maximum (when you get it right, there is no penalty): **+0**  
+  Match 'q' - cools the thermometer by 1 and penalty the current temperature): **+1**  
+  Match 'u' - cools the thermometer by 1 and penalty the current temperature): **+2**  
     
   This sequence of temperature measures, ```[0, 1, 2, 3, 3, 0, 0, 0, 0, 1, 2]```, demonstrates how the thermometer adapts during the comparison. Adjusting the ```cooling``` and ```heating``` rates can further fine-tune this behavior, making the algorithm flexible to different textual contexts and comparison needs. PedroThermoDistance is capable of calculating the similarity of strings using the sum of temperature measurements over the maximum distance, it also provides local similarity using temperature measurements, standard deviation and some other considerations. Local similarity has shown itself to be very promising for several use cases.  
     
