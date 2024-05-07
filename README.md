@@ -14,27 +14,27 @@ PedroThermoDistance leverages a dynamic programming approach to determine the si
 This temperature adjustment is constrained by the thermometerSize, which sets the maximum positive and negative bounds, akin to a thermometer’s maximum and minimum readings. These bounds prevent excessive penalties or rewards for long sequences of consecutive matches or mismatches, ensuring a balanced and fair assessment of similarity.
 
 - ### Example Visualization
-  Consider two strings, ```s1 = "testee"``` and ```s2 = "txxxstee"```. Given a thermometerSize of ```3```, the ```PedroThermoDistance``` algorithm might produce a sequence of temperature changes as follows:
-  t e - - - s t e e q
-  t - x x x s t e e u
+  Consider two strings, ```s1 = "testee"``` and ```s2 = "txxxstee"```. Given a thermometerSize of ```3```, the ```PedroThermoDistance``` algorithm might produce a sequence of temperature changes as follows:  
+  t e - - - s t e e q  
+  t - x x x s t e e u  
 
-  Starting at ```impulse=1``` (This implies that the thermometer starts hot at the limit which would be 3, this means that it starts out good, as if it had already hit several letters before.) ->
-  
-  Match 't', thermometer remains at maximum (when you get it right, there is no penalty, even the temperature is below 0): +0
-  mismatch 'e', cools the thermometer by 1 and penalty the current temperature: +1
-  mismatch 'x', cools the thermometer by 1 and penalty the current temperature: +2
-  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3
-  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3
-  Match 's', the temperature heats up by 1 point (when you get it right, there is no penalty): +0
-  Match 't', the temperature heats up by 1 point (when you get it right, there is no penalty): +0
-  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0
-  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0
-  Match 'q', cools the thermometer by 1 and penalty the current temperature): +1
-  Match 'u', cools the thermometer by 1 and penalty the current temperature): +2
-  
-  This sequence of temperature measures, ```[0, 1, 2, 3, 3, 0, 0, 0, 0, 1, 2]```, demonstrates how the thermometer adapts during the comparison. Adjusting the ```cooling``` and ```heating``` rates can further fine-tune this behavior, making the algorithm flexible to different textual contexts and comparison needs. PedroThermoDistance is capable of calculating the similarity of strings using the sum of temperature measurements over the maximum distance, it also provides local similarity using temperature measurements, standard deviation and some other considerations. Local similarity has shown itself to be very promising for several use cases.
-  
-  The time complexity of PedroThermoDistance is O(firstText * secondText * thermometerSize) where thermometerSize can be easily disregarded as it is a constant in most use cases, and it allow efficient real-time analyses. This efficiency, combined with its dynamic adaptability, makes it an excellent tool for applications in data processing where text similarity assessments are crucial.
+  Starting at ```impulse=1``` (This implies that the thermometer starts hot at the limit which would be 3, this means that it starts out good, as if it had already hit several letters before.) ->  
+    
+  Match 't', thermometer remains at maximum (when you get it right, there is no penalty, even the temperature is below 0): +0  
+  mismatch 'e', cools the thermometer by 1 and penalty the current temperature: +1  
+  mismatch 'x', cools the thermometer by 1 and penalty the current temperature: +2  
+  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3  
+  mismatch 'x', cools the thermometer by 1 (the temperature reached its minimum), penalty the current temperature: +3  
+  Match 's', the temperature heats up by 1 point (when you get it right, there is no penalty): +0  
+  Match 't', the temperature heats up by 1 point (when you get it right, there is no penalty): +0  
+  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0  
+  Match 'e', thermometer remains at maximum (when you get it right, there is no penalty): +0  
+  Match 'q', cools the thermometer by 1 and penalty the current temperature): +1  
+  Match 'u', cools the thermometer by 1 and penalty the current temperature): +2  
+    
+  This sequence of temperature measures, ```[0, 1, 2, 3, 3, 0, 0, 0, 0, 1, 2]```, demonstrates how the thermometer adapts during the comparison. Adjusting the ```cooling``` and ```heating``` rates can further fine-tune this behavior, making the algorithm flexible to different textual contexts and comparison needs. PedroThermoDistance is capable of calculating the similarity of strings using the sum of temperature measurements over the maximum distance, it also provides local similarity using temperature measurements, standard deviation and some other considerations. Local similarity has shown itself to be very promising for several use cases.  
+    
+  The time complexity of PedroThermoDistance is O(firstText * secondText * thermometerSize) where thermometerSize can be easily disregarded as it is a constant in most use cases, and it allow efficient real-time analyses. This efficiency, combined with its dynamic adaptability, makes it an excellent tool for applications in data processing where text similarity assessments are crucial.  
 
 ## Live Demo
 
@@ -68,8 +68,8 @@ Here is how you might use the algorithm to compare two strings for local similar
   - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
   - **softness**: Used in the calculations to weight the standard deviation, that is, how much it should influence the similarity, higher values ​​create a smoother curve.
   
-  **Eg:**
   ```javascript
+  // example
   const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
   const localSimilarityScore = ptd.localSimilarity(0);
   console.log(localSimilarityScore); // ~0.49
@@ -80,8 +80,8 @@ This example demonstrates how the PedroThermoDistance calculates global similari
 
   - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
   
-  **Eg:**
   ```javascript
+  // example
   const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
   const distanceSimilarityScore = ptd.similarity(0);
   console.log(distanceSimilarityScore); // ~0.69
