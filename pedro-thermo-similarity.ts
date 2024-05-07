@@ -282,7 +282,7 @@ class PedroThermoDistance {
      * @param {number} softness - Used in the calculations to weight the standard deviation, that is, how much it should influence the similarity, higher values ​​create a smoother curve.
      * @returns {number} The local similarity score between 0 and 1.
      */
-    localSimilarity(impulse: number, softness: number=1) {
+    localSimilarity(impulse: number, softness: number=0.5) {
         //
         function standardDeviation(measurements: number[]) {
             let mean = measurements.reduce((prev, curr) => prev + curr, 0) / measurements.length
