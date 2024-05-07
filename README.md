@@ -60,7 +60,7 @@ Use the text fields to input the strings you want to compare, adjust the thermom
 ## Usage Examples
 
 ### Local Similarity
-Here is how you might use the algorithm to compare two strings for local similarity ```localSimilarity(impulse, softness=1)```:
+Here is how you might use the algorithm to compare two strings for local similarity ```localSimilarity(impulse, softness=0.5)```:
 
   - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
   - **softness**: Used in the calculations to weight the standard deviation, that is, how much it should influence the similarity, higher values ​​create a smoother curve.
@@ -69,7 +69,7 @@ Here is how you might use the algorithm to compare two strings for local similar
   // example
   const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
   const localSimilarityScore = ptd.localSimilarity(0);
-  console.log(localSimilarityScore); // ~0.49
+  console.log(localSimilarityScore); // ~0.38
   ```
 
 ### Distance Similarity
