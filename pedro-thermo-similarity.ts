@@ -279,9 +279,10 @@ class PedroThermoDistance {
      * Computes the local similarity score between two strings using a dynamic programming approach with a 'thermometer' mechanism.
      * Local similarity is calculated based on the ratio of correct matches to total operations within a local context, adjusted for penalties.
      * @param {number} impulse - The impulse factor influencing the local similarity calculation.
+     * @param {number} softness - Used in the calculations to weight the standard deviation, that is, how much it should influence the similarity, higher values ​​create a smoother curve.
      * @returns {number} The local similarity score between 0 and 1.
      */
-    localSimilarity(impulse: number) {
+    localSimilarity(impulse: number, softness: number=1) {
         //
         function standardDeviation(measurements: number[]) {
             let mean = measurements.reduce((prev, curr) => prev + curr, 0) / measurements.length
@@ -293,14 +294,14 @@ class PedroThermoDistance {
     
         const similarity1 = this.similarityTo(impulse, 'ltr')
         const similarity1W = 1 - Math.abs(0.5 - similarity1) / 0.5
-        const standardDeviation1W = standardDeviation(ltr.measurements) * Math.pow(similarity1W, 2)
+        const standardDeviation1W = standardDeviation(ltr.measurements) * Math.pow(similarity1W, softness)
         const localSimilarity1 = Math.min(1, similarity1 / Math.max(1, standardDeviation1W))
-    
+
         const similarity2 = this.similarityTo(impulse, 'rtl')
         const similarity2W = 1 - Math.abs(0.5 - similarity2) / 0.5
-        const standardDeviation2W = standardDeviation(rtl.measurements) * Math.pow(similarity2W, 2)
+        const standardDeviation2W = standardDeviation(rtl.measurements) * Math.pow(similarity2W, softness)
         const localSimilarity2 = Math.min(1, similarity2 / Math.max(1, standardDeviation2W))
-    
+        
         return Math.max(localSimilarity1, localSimilarity2)
     }
 }
