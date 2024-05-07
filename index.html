@@ -438,7 +438,7 @@
                 return Math.max(this.similarityTo(impulse, 'ltr'), this.similarityTo(impulse, 'rtl'))
             }
 
-            localSimilarity(impulse, softness=1) {
+            localSimilarity(impulse, softness=0.5) {
                 //
                 function standardDeviation(measurements) {
                     let mean = measurements.reduce((prev, curr) => prev + curr, 0) / measurements.length
