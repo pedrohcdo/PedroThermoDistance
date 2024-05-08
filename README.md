@@ -36,23 +36,36 @@ It also proved to be more effective in calculating similarity compared to other 
 ```
 
 ## Usage Examples
+### PedroThermoDistance: O(N\*M) for a constant T
 
-### Distance
-Here is how you might use the algorithm to calculate strings distance ```distance(impulse)``` and max distance ```maxDistance(impulse)```:
+Before the examples you will need to create an instance of ```PedroThermoDistance```
 
-  - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
-  
+```javascript
+const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
+```
+
+Most of the examples below use a parameter called ```impulse```, the ```impulse``` determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
+    
+### Distance: O(1)
+Here is how you might use the algorithm to calculate strings distance ```distance(impulse)```:
+
   ```javascript
   // example
-  const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
   console.log(ptd.distance(0)); // 34
   console.log(ptd.maxDistance(0)) // 110
   ```
 
-### Local Similarity
+### MaxDistance: O(N+M)
+Here is how you might use the algorithm to calculate strings max distance ```maxDistance(impulse)```:
+
+  ```javascript
+  // example
+  console.log(ptd.maxDistance(0)) // 110
+  ```
+
+### Local Similarity O(N+M)
 Here is how you might use the algorithm to compare two strings for local similarity ```localSimilarity(impulse, softness=0.5)```:
 
-  - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
   - **softness**: Used in the calculations to weight the standard deviation, that is, how much it should influence the similarity, higher values ​​create a smoother curve.
   
   ```javascript
@@ -62,11 +75,10 @@ Here is how you might use the algorithm to compare two strings for local similar
   console.log(localSimilarityScore); // ~0.38
   ```
 
-### Distance Similarity
-This example demonstrates how the PedroThermoDistance calculates global similarity ```similarity(impulse)```:
+### Distance Similarity: O(N+M)
+This example demonstrates how the PedroThermoDistance calculates similarity ```similarity(impulse)```:
+```Distance similarity is simpler but is a crucial part of local similarity, but if you want to use something simpler and more performative.```
 
-  - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
-  
   ```javascript
   // example
   const ptd = PedroThermoDistance.from("Hello World", "elowHlolrWd", 5, { heating: 1, cooling: 1 });
@@ -74,10 +86,8 @@ This example demonstrates how the PedroThermoDistance calculates global similari
   console.log(distanceSimilarityScore); // ~0.69
   ```
 
-### Traverse
+### Traverse: O(N+M)
 This example demonstrates how the PedroThermoDistance traverse the best solution with ```traverse(impulse)```:
-
-  - **impulse**: The impulse determines how good or bad the thermometer will start, where 0 is very bad, any error at the beginning would already charge ```thermometerSize``` and 1 is very good, any error at the beginning would charge 1.
   
   ```javascript
   // example
