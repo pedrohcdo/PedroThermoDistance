@@ -8,6 +8,8 @@ The ```PedroThermoDistance``` algorithm introduces a dynamic thermometer approac
 It also proved to be more effective in calculating similarity compared to other algorithms. Below are some demonstrations, I used the 'hermetrics' library to compare, the Dice, Hamming, Jaccard, Jaro, Jaro-Winkler algorithms did not prove to be as reliable in all cases.
 
 ```javascript
+// In both examples, the basic PTD configuration was used, thermometer=5, heating=1, cooling=1 and impulse=0
+
 // Comparision 1
 // TextA: "Hello World"
 // textB: "H!eeelxxlwoo Woorldssss"
