@@ -5,6 +5,34 @@
 ## Introduction
 The ```PedroThermoDistance``` algorithm introduces a dynamic thermometer approach to calculating string similarity. Using a dynamic programming, it incorporates a unique 'thermometer' mechanism that dynamically adjusts penalties during the string comparison process. This mechanism simulates a thermometer's behavior, where consecutive matches increase the 'temperature', and mismatches decrease it (resulting in penalties based on current temperature). This design allows the algorithm to adapt to the flow of textual similarities and differences, making it ideal for applications that require differentiated text analysis that involve, for example: nuances, misspellings, and etc. With it, it is also possible to generate aligned texts, which makes it even more useful for some use cases that need detailed comparisons and reconciliations of textual data.
 
+It also proved to be more effective in calculating similarity compared to other algorithms. Below are some demonstrations, I used the 'hermetrics' library to compare, the Dice, Hamming, Jaccard, Jaro, Jaro-Winkler algorithms did not prove to be as reliable in all cases.
+
+```javascript
+// Comparision 1
+// TextA: "Hello World"
+// textB: "H!eeelxxlwoo Woorldssss"
+{
+  "PedroThermoSimilarity":  0.6722206685686631
+  "LevenshtainDistance":  0.4782608695652174
+  "Damerau-LevenshtainDistance":  0.4782608695652174
+  "OSA":  0.4782608695652174
+  "JaroDistance":  0.7806324110671937
+  "JaroWinklerDistance":  0.8025691699604743
+}
+
+// Comparision 2
+// TextA: "Hello World"
+// textB: "elowHlolrWd"
+{
+  "PedroThermoSimilarity":  0.38584465653394745
+  "LevenshtainDistance":  0.36363636363636365
+  "Damerau-LevenshtainDistance":  0.36363636363636365
+  "OSA":  0.36363636363636365
+  "JaroDistance":  0.806060606060606 // no much reliable
+  "JaroWinklerDistance":  0.806060606060606 // no much reliable
+}
+```
+
 ## Usage Examples
 
 ### Distance
