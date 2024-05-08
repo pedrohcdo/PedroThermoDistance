@@ -186,17 +186,17 @@
                 <input type="text" id="comparisonText" placeholder="Comparison text" value="hello">
                 <div class="note">Enter a word or phrase to compare against the initial list.</div>
 
-                <label for="thermometerSize">Thermometer Size: <span id="clampValue">7</span></label>
-                <input type="range" id="thermometerSize" min="1" max="10" value="6"
+                <label for="thermometerSize">Thermometer Size: <span id="clampValue">3</span></label>
+                <input type="range" id="thermometerSize" min="1" max="10" value="3"
                     oninput="document.getElementById('clampValue').textContent = value">
                 <div class="note">Adjust the maximum limit for thermometer Size. This clamp value sets the upper bound
                     for how much the thermometer can increase or decrease with each subsequent mismatch.</div>
 
-                <input type="number" id="heatingRate" placeholder="Heating Rate" value="4" min="1">
+                <input type="number" id="heatingRate" placeholder="Heating Rate" value="1" min="1">
                 <div class="note">Rate at which the thermometer heats up after each match, enhancing sensitivity to
                     subsequent matches.</div>
 
-                <input type="number" id="coolingRate" placeholder="Cooling Rate" value="2" min="1">
+                <input type="number" id="coolingRate" placeholder="Cooling Rate" value="1" min="1">
                 <div class="note">Rate at which the thermometer cools down after each mismatch, reducing sensitivity to
                     subsequent matches.</div>
             </div>
@@ -539,7 +539,7 @@
                     const coolingRate = parseInt(document.getElementById('coolingRate').value);
 
                     const ptd = PedroThermoDistance.from(a, b, thermometerSize, { heating: heatingRate, cooling: coolingRate })
-                    return ptd.localSimilarity(0.6)
+                    return ptd.localSimilarity(0)
                 }
             },
             { name: 'Levenshtein', callback: (a, b) => levenshtein.similarity(a, b) },
@@ -595,7 +595,6 @@
         // Initial populate of word list
         populateWordList(initialWords, wordList);
         updateAll()
-        updateWordsClouds(initialWords)
 
         document.getElementById('newWord').addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {

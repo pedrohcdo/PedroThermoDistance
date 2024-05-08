@@ -226,16 +226,25 @@ class PedroThermoDistance {
             rtl
         }
     }
-
+    
     /**
-     * Computes the distance between two strings in either left-to-right (ltr) or right-to-left (rtl) direction.
+     * Computes the distance between two strings in left-to-right (ltr) or right-to-left (rtl) direction.
      * @param {number} [impulse=1] - The impulse factor influencing the distance calculation.
      * @param {string} [direction='ltr'] - The direction of comparison, either 'ltr' (left-to-right) or 'rtl' (right-to-left).
      * @returns {number} The distance between the two strings.
      */
-    distance(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
+    distanceTo(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
         const startOn = Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse))
         return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
+    }
+    
+    /**
+     * Computes the min distance between two strings.
+     * @param {number} [impulse=1] - The impulse factor influencing the distance calculation.
+     * @returns {number} The distance between the two strings.
+     */
+    distance(impulse: number = 1) {
+        return Math.min(this.distanceTo(impulse, 'ltr'), this.distanceTo(impulse, 'rtl'))
     }
     
     /**
@@ -262,7 +271,7 @@ class PedroThermoDistance {
      * @returns {number} The similarity score between 0 and 1.
      */
     similarityTo(impulse: number = 1, direction: 'ltr' | 'rtl' = 'ltr') {
-        return 1 - this.distance(impulse, direction) / this.maxDistance(impulse)
+        return 1 - this.distanceTo(impulse, direction) / this.maxDistance(impulse)
     }
     
     /**
@@ -311,12 +320,12 @@ class PedroThermoDistance {
 const textA = "Coca Cola"
 const textB = "xxxxCxolx"
 
-const thermometerSize = 5
+const thermometerSize = 3
 const impulse = 0
 
 let ptd = PedroThermoDistance.from(textA, textB, thermometerSize, {
-    heating: 5,
-    cooling: 2
+    heating: 1,
+    cooling: 1
 })
 
 console.log({
