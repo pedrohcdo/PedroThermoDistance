@@ -170,15 +170,23 @@ class PedroThermoDistance {
 
             let charPositionI = directionDim === 0 ? i : (this.firstText.length - i - 1)
             let charPositionJ = directionDim === 0 ? j : (this.secondText.length - j - 1)
+            let choices = []
+
+            const cost = this.thermometerSize - temperature
+            const heat = Math.min(temperature + (this.options?.heating || 1), this.thermometerSize - 1)
+            const cold = Math.max(temperature - (this.options?.cooling || 1), 0)
+
 
             if (this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ)) {
-                measurements.push(0)
-                matchedText1 = this.firstText.charAt(charPositionI) + matchedText1
-                matchedText2 = this.secondText.charAt(charPositionJ) + matchedText2
-                temperature = Math.min(temperature + (this.options?.heating || 1), this.thermometerSize - 1)
-                i--
-                j--
-                continue
+                choices.push({
+                    measurement: 0,
+                    cost: this.dp[i][j][heat][directionDim],
+                    newMatchedText1: this.firstText.charAt(charPositionI) + matchedText1,
+                    newMatchedText2: this.secondText.charAt(charPositionJ) + matchedText2,
+                    newTemperature: heat,
+                    newI: i - 1,
+                    newJ: j - 1
+                })
             }
 
             let tDirection = directionDim === 0 ? -1 : 1
@@ -187,22 +195,48 @@ class PedroThermoDistance {
                     && this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ + tDirection))
 
             if (transversal) {
-                measurements.push(0)
-                matchedText1 = this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText1
-                matchedText2 = this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText2
-                i -= 2
-                j -= 2
-            } else if (this.dp[i + 1][j][temperature][directionDim] <= this.dp[i][j + 1][temperature][directionDim]) {
-                measurements.push(this.thermometerSize - temperature)
-                matchedText2 = `-` + matchedText2
-                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
-                j--
-            } else {
-                measurements.push(this.thermometerSize - temperature)
-                matchedText1 = '-' + matchedText1
-                temperature = Math.max(temperature - (this.options?.cooling || 1), 0)
-                i--
+                  choices.push({
+                    measurement: 0,
+                    cost: this.dp[i - 1][j - 1][cold][directionDim],
+                    newMatchedText1: this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText1,
+                    newMatchedText2: this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText2,
+                    newTemperature: cold,
+                    newI: i - 2,
+                    newJ: j - 2
+                })
             }
+
+            choices.push({
+                measurement: cost,
+                cost: this.dp[i + 1][j][cold][directionDim] + cost,
+                newMatchedText1: matchedText1,
+                newMatchedText2: `-` + matchedText2,
+                newTemperature: cold,
+                newI: i,
+                newJ: j - 1
+            })
+
+            choices.push({
+                measurement: cost,
+                cost: this.dp[i][j + 1][cold][directionDim] + cost,
+                newMatchedText1: '-' + matchedText1,
+                newMatchedText2: matchedText2,
+                newTemperature: cold,
+                newI: i - 1,
+                newJ: j
+            })
+
+
+            choices.sort((a, b) => a.cost - b.cost)
+            
+            const best = choices[0]
+
+            measurements.push(best.measurement)
+            matchedText1 = best.newMatchedText1
+            matchedText2 = best.newMatchedText2
+            temperature = best.newTemperature
+            i = best.newI
+            j = best.newJ
         }
 
         //
