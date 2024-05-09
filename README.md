@@ -132,11 +132,9 @@ This temperature adjustment is constrained by the thermometerSize, which sets th
 
 Experience the PedroThermoDistance algorithm live! Click the link below to access an interactive user interface where you can input strings and compare them using different thermometer sizes and heating or cooling rates.
 
-[Try PedroThermoDistance Live](https://pedrohcdo.github.io/PedroThermoDistance/pages)
+**Pedro Thermo Similarity Demo**: [Try PedroThermoDistance Live](https://pedrohcdo.github.io/PedroThermoDistance/pages)
 
-### 3D Pedro Thermo Matrix Visualization
-
-[Try PedroThermoDPMatrixVisualization Live](https://pedrohcdo.github.io/PedroThermoDistance/pages/3d-view.html)
+**3D Pedro Thermo Matrix Visualization**: [Try PedroThermoDPMatrixVisualization Live](https://pedrohcdo.github.io/PedroThermoDistance/pages/3d-view.html)
 
 Use the text fields to input the strings you want to compare, adjust the thermometer size, and modify the heating and cooling rates to see the similarity score between the two strings and at the bottom you can compare different algorithms (such as levenshtain, jara, .. ), to use in string clustering (in the example a simple knn was used).
 
