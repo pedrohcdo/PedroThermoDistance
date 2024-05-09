@@ -132,7 +132,11 @@ This temperature adjustment is constrained by the thermometerSize, which sets th
 
 Experience the PedroThermoDistance algorithm live! Click the link below to access an interactive user interface where you can input strings and compare them using different thermometer sizes and heating or cooling rates.
 
-[Try PedroThermoDistance Live](https://pedrohcdo.github.io/PedroThermoDistance/)
+[Try PedroThermoDistance Live](https://pedrohcdo.github.io/PedroThermoDistance/pages)
+
+### 3D Pedro Thermo Matrix Visualization
+
+[Try PedroThermoDPMatrixVisualization Live](https://pedrohcdo.github.io/PedroThermoDistance/pages/3d-view.html)
 
 Use the text fields to input the strings you want to compare, adjust the thermometer size, and modify the heating and cooling rates to see the similarity score between the two strings and at the bottom you can compare different algorithms (such as levenshtain, jara, .. ), to use in string clustering (in the example a simple knn was used).
 
@@ -149,8 +153,6 @@ Use the text fields to input the strings you want to compare, adjust the thermom
     This mode computes a ```local similarity``` using the current distance similarity and also all measurements acquired on the best path dynamically. It leverages a nuanced assessment of similarity, taking into account not only the direct match/mismatch by max distance but also their distribution across the string. The local similarity is determined by the proximity of the similarity score to 0 or 1, indicating more definitive matching or mismatching. It adjusts for variability in matching quality using the standard deviation weighted by the proximity of the similarity to the center, the closer the similarity approaches a center (that is greater than 0 and less than 1) the more the standard deviation is considered, which reflects the deviation from a median similarity level. This is only possible due to the way in which the algorithm was designed, making it possible to capture these temperature variations. This method is particularly reliable for confirming the quality of matches or mismatches, making it suitable for applications where precise text alignment and comparison are crucial.
   - **Similarity**: 
     This mode calculates a direct similarity score based on the overall distance between two strings which is the sum of the measured temperatures divided by the maximum cost it would have between the two strings, without additional adjustments. It reflects the aggregate quality of the match across the entire length of the strings, providing a holistic view of their similarity. This mode is useful for general text similarity assessments where detailed local variations are less critical.
-
-
 
 
 ## License
