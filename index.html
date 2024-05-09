@@ -363,9 +363,9 @@
                     let charPositionJ = directionDim === 0 ? j : (this.secondText.length - j - 1)
                     let choices = []
         
-                    const cost = thermometerSize - temperature
-                    const heat = Math.min(temperature + (options?.heating || 1), thermometerSize - 1)
-                    const cold = Math.max(temperature - (options?.cooling || 1), 0)
+                    const cost = this.thermometerSize - temperature
+                    const heat = Math.min(temperature + (this.options?.heating || 1), this.thermometerSize - 1)
+                    const cold = Math.max(temperature - (this.options?.cooling || 1), 0)
         
         
                     if (this.firstText.charAt(charPositionI) === this.secondText.charAt(charPositionJ)) {
