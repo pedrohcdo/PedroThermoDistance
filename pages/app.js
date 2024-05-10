@@ -99,7 +99,7 @@ class PedroThermoDistance {
         let i = this.firstText.length - 1
         let j = this.secondText.length - 1
 
-        let temperature = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse)))
+        let temperature = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, Math.round((this.thermometerSize - 1) * impulse))))
         let measurements = []
 
         let matchedText1 = ""
@@ -213,7 +213,7 @@ class PedroThermoDistance {
     }
 
     distance(impulse = 1, direction = 'ltr') {
-        const startOn = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse)))
+        const startOn = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, Math.round((this.thermometerSize - 1) * impulse))))
         return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
     }
 
