@@ -150,8 +150,47 @@ Use the text fields to input the strings you want to compare, adjust the thermom
   - **Similarity**: 
     This mode calculates a direct similarity score based on the overall distance between two strings which is the sum of the measured temperatures divided by the maximum cost it would have between the two strings, without additional adjustments. It reflects the aggregate quality of the match across the entire length of the strings, providing a holistic view of their similarity. This mode is useful for general text similarity assessments where detailed local variations are less critical.
 
+## F-Score Evaluation Setup and Execution
+To accurately assess the F-Score of various similarity algorithms using the PedroThermoSimilarity system, follow these steps:
 
+### Step 1: Install ts-node
+`ts-node` is required to execute TypeScript files directly from the command line. Install it globally using npm with the following command:
+```bash
+npm install -g ts-node
+```
 
+### Step 2: Clone the Repository
+Clone the PedroThermoDistance repository from GitHub to your local machine using the following git command:
+```bash
+git clone git@github.com:pedrohcdo/PedroThermoDistance.git
+```
+
+### Step 3: Install Dependencies
+Navigate to the cloned repository directory and install the necessary npm packages:
+```bash
+cd PedroThermoDistance
+npm install
+```
+
+### Step 4: Run the Similarity Evaluation Script
+Execute the similarity assessment script using `ts-node`. This script evaluates the F1-Score for various algorithms by generating a dataset based on a sample of words:
+```bash
+ts-node ./similarity-evaluation/text-similarity-evaluation.ts
+```
+
+### Explanation of the Process
+The script employs a range of algorithms to determine text similarity, each of which might treat word variations differently. These algorithms include:
+
+- **Levenshtein**
+- **Damerau-Levenshtein**
+- **OSA** (Optimal String Alignment)
+- **Jaro**
+- **Jaro-Winkler**
+- **Dice's Coefficient**
+- **Jaccard Index**
+- **Hamming Distance**
+
+These algorithms are sourced from the `hermetrics` library, which provides well-tested implementations.
 
 ## License
 
