@@ -192,6 +192,21 @@ The script employs a range of algorithms to determine text similarity, each of w
 
 These algorithms are sourced from the `hermetrics` library, which provides well-tested implementations.
 
+### Sample of output
+```javascript
+{
+  "Levenshtain":  0.14260249554367205,
+  "Damerau-Levenshtain":  0.14260249554367205,
+  "OSA":  0.1524822695035461,
+  "Jaro":  0.4017341040462427,
+  "Jaro-Winkler":  0.5194109772423026,
+  "Dice":  0.4380833851897946,
+  "Jaccard":  0.3398409255242227,
+  "Hamming":  0.0450281425891182,
+  "Pedro Thermo Similarity":  0.7417519908987484
+}
+```
+
 ## License
 
 MIT License
