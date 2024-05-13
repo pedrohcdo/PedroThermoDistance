@@ -151,61 +151,49 @@ Use the text fields to input the strings you want to compare, adjust the thermom
     This mode calculates a direct similarity score based on the overall distance between two strings which is the sum of the measured temperatures divided by the maximum cost it would have between the two strings, without additional adjustments. It reflects the aggregate quality of the match across the entire length of the strings, providing a holistic view of their similarity. This mode is useful for general text similarity assessments where detailed local variations are less critical.
 
 ## F-Score Evaluation Setup and Execution
-To accurately assess the F-Score of various similarity algorithms using the PedroThermoSimilarity system, follow these steps:
+To accurately assess the F-Score of various similarity algorithms using the PedroThermoSimilarity system.
+The script employs a series of algorithms to determine text similarity, each of which can treat word variations differently. To do this, a dataset is generated using a list of word examples, this dataset represents this list of words with some modifications, from subtle modifications to gross modifications, all modifications are random, the same generated dataset is used for all algorithms to generate the score fairly. The algorithms used were: **Levenshtein, Damerau-Levenshtein, OSA, Jaro, Jaro-Winkler, Dice, Jaccard Index, Hamming Distance and Pedro Thermo Similarity**, to run the evaluation follow the steps:
+    
+  - ### Step 1: Install ts-node
+  `ts-node` is required to execute TypeScript files directly from the command line. Install it globally using npm with the following command:
+  ```bash
+  npm install -g ts-node
+  ```
+  
+  - ### Step 2: Clone the Repository
+  Clone the PedroThermoDistance repository from GitHub to your local machine using the following git command:
+  ```bash
+  git clone git@github.com:pedrohcdo/PedroThermoDistance.git
+  ```
+  
+  - ### Step 3: Install Dependencies
+  Navigate to the cloned repository directory and install the necessary npm packages:
+  ```bash
+  cd PedroThermoDistance
+  npm install
+  ```
+  
+  - ### Step 4: Run the Similarity Evaluation Script
+  Execute the similarity assessment script using `ts-node`. This script evaluates the F1-Score for various algorithms by generating a dataset based on a sample of words:
+  ```bash
+  ts-node ./similarity-evaluation/text-similarity-evaluation.ts
+  ```
 
-### Step 1: Install ts-node
-`ts-node` is required to execute TypeScript files directly from the command line. Install it globally using npm with the following command:
-```bash
-npm install -g ts-node
-```
-
-### Step 2: Clone the Repository
-Clone the PedroThermoDistance repository from GitHub to your local machine using the following git command:
-```bash
-git clone git@github.com:pedrohcdo/PedroThermoDistance.git
-```
-
-### Step 3: Install Dependencies
-Navigate to the cloned repository directory and install the necessary npm packages:
-```bash
-cd PedroThermoDistance
-npm install
-```
-
-### Step 4: Run the Similarity Evaluation Script
-Execute the similarity assessment script using `ts-node`. This script evaluates the F1-Score for various algorithms by generating a dataset based on a sample of words:
-```bash
-ts-node ./similarity-evaluation/text-similarity-evaluation.ts
-```
-
-### Explanation of the Process
-The script employs a range of algorithms to determine text similarity, each of which might treat word variations differently. These algorithms include:
-
-- **Levenshtein**
-- **Damerau-Levenshtein**
-- **OSA** (Optimal String Alignment)
-- **Jaro**
-- **Jaro-Winkler**
-- **Dice's Coefficient**
-- **Jaccard Index**
-- **Hamming Distance**
-
-These algorithms are sourced from the `hermetrics` library, which provides well-tested implementations.
-
-### Sample of output
-```javascript
-{
-  "Levenshtain":  0.14260249554367205,
-  "Damerau-Levenshtain":  0.14260249554367205,
-  "OSA":  0.1524822695035461,
-  "Jaro":  0.4017341040462427,
-  "Jaro-Winkler":  0.5194109772423026,
-  "Dice":  0.4380833851897946,
-  "Jaccard":  0.3398409255242227,
-  "Hamming":  0.0450281425891182,
-  "Pedro Thermo Similarity":  0.7417519908987484
-}
-```
+  - ### Sample of output
+  These algorithms are sourced from the `hermetrics` library, which provides well-tested implementations.
+  ```javascript
+  {
+    "Levenshtain":  0.14260249554367205,
+    "Damerau-Levenshtain":  0.14260249554367205,
+    "OSA":  0.1524822695035461,
+    "Jaro":  0.4017341040462427,
+    "Jaro-Winkler":  0.5194109772423026,
+    "Dice":  0.4380833851897946,
+    "Jaccard":  0.3398409255242227,
+    "Hamming":  0.0450281425891182,
+    "Pedro Thermo Similarity":  0.7417519908987484
+  }
+  ```
 
 ## License
 
