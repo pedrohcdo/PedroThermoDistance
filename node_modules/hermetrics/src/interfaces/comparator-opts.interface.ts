@@ -1,0 +1,7 @@
+export default interface ComparatorSimilarity {
+  metric: {
+    name?: string
+    similarityValue?: number
+  }
+
+}

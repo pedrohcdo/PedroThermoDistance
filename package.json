@@ -1,0 +1,14 @@
+{
+  "name": "pedrothermodistance",
+  "version": "1.0.0",
+  "description": "[![DOI](https://zenodo.org/badge/792886788.svg)](https://zenodo.org/doi/10.5281/zenodo.11078496)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "hermetrics": "^1.0.0"
+  }
+}

@@ -1,0 +1,5 @@
+import LevenshteinCostOptions from './levenshtein-opts.interface'
+
+export default interface IDamerauLevenshteinCostOptions extends LevenshteinCostOptions {
+  transpositionCost?: number
+}

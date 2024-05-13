@@ -99,7 +99,7 @@ class PedroThermoDistance {
         let i = this.firstText.length - 1
         let j = this.secondText.length - 1
 
-        let temperature = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse)))
+        let temperature = Math.max(0, Math.min(this.thermometerSize - 1, Math.round((this.thermometerSize - 1) * impulse)))
         let measurements = []
 
         let matchedText1 = ""
@@ -158,7 +158,8 @@ class PedroThermoDistance {
                     newMatchedText2: this.firstText.charAt(charPositionI) + this.firstText.charAt(charPositionI + tDirection) + matchedText2,
                     newTemperature: cold,
                     newI: i - 2,
-                    newJ: j - 2
+                    newJ: j - 2,
+                    isTransversal: true
                 })
             }
 
@@ -193,6 +194,7 @@ class PedroThermoDistance {
             i = best.newI
             j = best.newJ
             if (callback) callback(i + 1, j + 1, temperature, matchedText1, matchedText2)
+            if (best.isTransversal && callback)  callback(i + 2, j + 2, temperature, matchedText1, matchedText2)
         }
 
         //
@@ -213,7 +215,7 @@ class PedroThermoDistance {
     }
 
     distance(impulse = 1, direction = 'ltr') {
-        const startOn = Math.round(Math.max(0, Math.min(this.thermometerSize - 1, (this.thermometerSize - 1) * impulse)))
+        const startOn = Math.max(0, Math.min(this.thermometerSize - 1, Math.round((this.thermometerSize - 1) * impulse)))
         return this.dp[this.firstText.length][this.secondText.length][startOn][direction === 'ltr' ? 0 : 1]
     }
 
