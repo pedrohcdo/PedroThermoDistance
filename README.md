@@ -199,7 +199,7 @@ The script employs a series of algorithms to determine text similarity, each of 
 
 MIT License
 
-Copyright (c) [ano] [nome completo do detentor dos direitos autorais]
+Copyright (c) [2024] [Pedro Henrique Chaves de Oliveira]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
