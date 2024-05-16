@@ -185,14 +185,15 @@ The script employs a series of algorithms to determine text similarity, each of 
   These algorithms are sourced from the `hermetrics` library, which provides well-tested implementations.
   ```javascript
   {
-    "levenshtein": 0.6245059288537549
-    "damerauLevenshtein": 0.676791277258567
-    "osa": 0.6171686746987951
-    "jaro": 0.7571043352001658
-    "jaroWinkler": 0.7745664739884394
-    "dice": 0.6609469335875436
-    "jaccard": 0.6935295101153652
-    "hamming": 0.45481049562682213
+    "levenshtein": 0.6088407005838198,
+    "damerauLevenshtein": 0.6739214924212981,
+    "osa": 0.6739214924212981,
+    "jaro": 0.7589341045238587,
+    "jaroWinkler": 0.7716913234706118,
+    "dice": 0.6823181743556067,
+    "jaccard": 0.6855281207133058,
+    "hamming": 0.44249726177437027,
+    "pedroThermoSimilarity": 0.8164887012664513
   }
   ```
 
