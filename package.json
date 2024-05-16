@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hermetrics": "^1.0.0"
+    "@types/damerau-levenshtein": "^1.0.2",
+    "damerau-levenshtein": "^1.0.8",
+    "hermetrics": "^1.2.15"
   }
 }
