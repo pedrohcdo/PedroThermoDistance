@@ -50,7 +50,7 @@ interface Algorithms {
 const algorithmsEvaluation: Algorithms = {
     levenshtein: {
         normalization: (label: string, pred: string): number => {
-            return Math.max(label.length, pred.length) - levenshtein.distance(pred, label)
+            return Math.max(label.length, pred.length) - levenshtein.distance(label, pred)
         },
         threshold: (label: string, pred: string): number => {
             return (Math.min(label.length, pred.length) * 2) / 3
@@ -58,7 +58,7 @@ const algorithmsEvaluation: Algorithms = {
     },
     damerauLevenshtein: {
         normalization: (label: string, pred: string): number => {
-            return Math.max(label.length, pred.length) - damerauLevenshtein(pred, label).steps
+            return Math.max(label.length, pred.length) - damerauLevenshtein(label, pred).steps
         },
         threshold: (label: string, pred: string): number => {
             return (Math.min(label.length, pred.length) * 2) / 3
@@ -66,7 +66,7 @@ const algorithmsEvaluation: Algorithms = {
     },
     osa: {
         normalization: (label: string, pred: string): number => {
-            return osa.maxDistance(label, pred) - osa.distance(pred, label)
+            return osa.maxDistance(label, pred) - osa.distance(label, pred)
         },
         threshold: (label: string, pred: string): number => {
             return (Math.min(label.length, pred.length) * 2) / 3
@@ -114,7 +114,7 @@ const algorithmsEvaluation: Algorithms = {
     },
     hamming: {
         normalization: (label: string, pred: string): number => {
-            return hamming.maxDistance(label, pred) - hamming.distance(pred, label)
+            return hamming.maxDistance(label, pred) - hamming.distance(label, pred)
         },
         threshold: (label: string, pred: string): number => {
             return Math.min(label.length, pred.length) / 2
