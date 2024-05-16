@@ -69,7 +69,7 @@ const algorithmsEvaluation: Algorithms = {
             return osa.maxDistance(label, pred) - osa.distance(pred, label)
         },
         threshold: (label: string, pred: string): number => {
-            return Math.min(label.length, pred.length) / 2
+            return (Math.min(label.length, pred.length) * 2) / 3
         }
     },
     jaro: {
@@ -99,7 +99,7 @@ const algorithmsEvaluation: Algorithms = {
             return dice.similarity(label, pred)
         },
         threshold: (): number => {
-            return 0.6
+            return 0.7
         }
     },
     jaccard: {
@@ -109,7 +109,7 @@ const algorithmsEvaluation: Algorithms = {
             return jaccard.similarity(label, pred)
         },
         threshold: (label: string, pred: string): number => {
-            return 0.6
+            return 0.7
         }
     },
     hamming: {
